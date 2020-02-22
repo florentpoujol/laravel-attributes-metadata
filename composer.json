@@ -1,0 +1,29 @@
+{
+  "name": "florentpoujol/laravel-model-metadata",
+  "type": "library",
+  "description": "",
+  "keywords": [
+    "laravel"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Florent Poujol"
+    }
+  ],
+  "require": {
+    "php": "^7.2",
+    "laravel/framework": "^6.0|^7.0"
+  },
+  "require-dev": {},
+  "autoload": {
+    "psr-4": {
+      "FlorentPoujol\\LaravelModelMetadata\\": "src/"
+    }
+  },
+  "autoload-dev": {},
+  "extra": {},
+  "config": {
+    "sort-packages": true
+  }
+}
