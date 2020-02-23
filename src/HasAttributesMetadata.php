@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FlorentPoujol\LaravelModelMetadata;
 
 /**
  * Main trait to be added on models
+ *
+ * @property array<string, array<string|object>> $rawAttributesMetadata
  */
 trait HasAttributesMetadata
 {
-    /** @var ModelMetadata */
+    /** @var \FlorentPoujol\LaravelModelMetadata\ModelMetadata */
     protected static $modelMetadata;
 
     /**
@@ -23,8 +27,9 @@ trait HasAttributesMetadata
     }
 
     /**
+     * @return \FlorentPoujol\LaravelModelMetadata\ModelMetadata
      */
-    public static function getMetadata()
+    public static function getMetadata(): ModelMetadata
     {
         if (static::$modelMetadata === null) {
             static::$modelMetadata = ModelMetadata::get(static::class);
@@ -32,6 +37,4 @@ trait HasAttributesMetadata
 
         return static::$modelMetadata;
     }
-
-    // TODO add a shitload of convenience methods (maybe on their own trait)
 }

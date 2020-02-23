@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FlorentPoujol\LaravelModelMetadata;
 
-use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Collection;
 
@@ -14,88 +15,97 @@ class ModelMetadata
     public function __construct(string $modelFqcn)
     {
         $this->modelFqcn = $modelFqcn;
-        $this->attributesMetadata = new Collection();
+        $this->attrMetadataObjects = new Collection();
 
-        if ($this->rawAttributesMetadata === null) {
+        if ($this->rawAttrsMetadata === null) {
             if (! property_exists($modelFqcn, 'attributesMetadata')) {
                 throw new \LogicException(
                     "Missing public static property 'attributesMetadata' on model '$modelFqcn'."
                 );
             }
 
-            $this->rawAttributesMetadata = (new $modelFqcn)->getRawAttributesMetadata();
-            $this->attributes = array_keys($this->rawAttributesMetadata);
+            $this->rawAttrsMetadata = $modelFqcn::getRawAttributesMetadata();
+            $this->attrNames = array_keys($this->rawAttrsMetadata);
         }
     }
 
     /** @var array<string, array<string|object>> */
-    protected $rawAttributesMetadata;
+    protected $rawAttrsMetadata;
 
     /** @var string[] List of the model's attributes (that have metadata) */
-    protected $attributes;
+    protected $attrNames;
 
-    /** @var array<string, AttributeMetadata> */
-    protected $attributesMetadata;
+    /** @var array<string, \FlorentPoujol\LaravelModelMetadata\AttributeMetadata> */
+    protected $attrMetadataObjects;
 
     /**
-     * @param string $attributeName Attribute
-     *
-     * @return AttributeMetadata
+     * @return \FlorentPoujol\LaravelModelMetadata\AttributeMetadata
      */
-    public function getAttributeMetadata(string $attributeName): AttributeMetadata
+    public function getAttributeMetadata(string $name): AttributeMetadata
     {
-        if (! in_array($attributeName, $this->attributes)) {
+        if (! in_array($name, $this->attrNames)) {
             throw new \LogicException(
-                "Attribute '{$this->modelFqcn}->$attributeName' doesn't have metadata"
+                "Attribute '{$this->modelFqcn}->$name' doesn't have metadata"
             );
         }
 
-        if (! isset($this->attributesMetadata[$attributeName])) {
+        if (! isset($this->attrMetadataObjects[$name])) {
             // it is time to instantiate an AttributeMetadata class for the attribute
             // TODO resolve custom objects
-            $this->attributesMetadata[$attributeName] =
-                new AttributeMetadata($this->rawAttributesMetadata[$attributeName]);
+            $this->attrMetadataObjects[$name] =
+                new AttributeMetadata($this->rawAttrsMetadata[$name]);
         }
 
-        return $this->attributesMetadata[$attributeName];
+        return $this->attrMetadataObjects[$name];
     }
 
     /**
-     * @param array|string ...$wantedAttributes One or several attribute name, or one array of attribute names
+     * @param array|string ...$attrNames One or several attribute name, or one array of attribute names
      *
-     * @return array<string, AttributeMetadata>
+     * @return array<string, \FlorentPoujol\LaravelModelMetadata\AttributeMetadata>
      */
-    public function getAttributesMetadata(...$wantedAttributes)
+    public function getAttrMetadataObjects(...$attrNames)
     {
         if (func_num_args() > 1) {
-            $wantedAttributes = func_get_args();
-        } elseif (is_string($wantedAttributes)) {
-            $wantedAttributes = [$wantedAttributes];
+            $attrNames = func_get_args();
+        } elseif (is_string($attrNames)) {
+            $attrNames = [$attrNames];
         }
 
-        $wantedAttributes = array_intersect($this->attributes, $wantedAttributes); // remove non-existant attributes
-        if (empty($wantedAttributes)) {
-            $wantedAttributes = $this->attributes;
+        $attrNames = array_intersect($this->attrNames, $attrNames); // remove non-existent attributes
+        if (empty($attrNames)) {
+            $attrNames = $this->attrNames;
         }
 
-        foreach ($wantedAttributes as $name) {
-            if (!isset($this->attributesMetadata[$name])) {
+        foreach ($attrNames as $name) {
+            if (! isset($this->attrMetadataObjects[$name])) {
                 $this->getAttributeMetadata($name); // create if not exists
             }
         }
 
-        return array_intersect_key($this->attributesMetadata, $wantedAttributes);
+        return array_intersect_key($this->attrMetadataObjects, $attrNames);
     }
 
+    /**
+     * @return string[]
+     */
+    public function getAttributeNames(): array
+    {
+        return $this->attrNames;
+    }
+
+    public function hasAttribute(string $name): bool
+    {
+        return isset($this->rawAttrsMetadata[$name]);
+    }
 
     /**
-     * @param Blueprint $table
+     * @param \Illuminate\Database\Schema\Blueprint $table
      */
-    public function getColumnDefinitions(Blueprint $table): void
+    public function addColumnDefinitions(Blueprint $table): void
     {
-        /** @var AttributeMetadata $metaObject */
-        foreach ($this->attributesMetadata as $name => $metaObject) {
-            $metaObject->getColumnDefinition($table);
+        foreach ($this->attrMetadataObjects as $name => $metaObject) {
+            $metaObject->addColumnDefinition($table);
         }
     }
 
@@ -106,10 +116,9 @@ class ModelMetadata
      */
     public function getCreateValidationRules(...$attributes): array
     {
-        $attrMeta = $this->getAttributesMetadata(func_get_args());
+        $attrMeta = $this->getAttrMetadataObjects(func_get_args());
 
         $rules = [];
-        /** @var AttributeMetadata $metaObject */
         foreach ($attrMeta as $name => $metaObject) {
             $rules[$name] = $metaObject->getCreateValidationRules();
         }
@@ -117,21 +126,24 @@ class ModelMetadata
         return $rules;
     }
 
+    // getcastedattributes getcasts
+    // getrelationattributes
+    // getattributesdefaultvalues
+
 
     // --------------------------------------------------
     // static
 
+    /** @var array<string, \FlorentPoujol\LaravelModelMetadata\ModelMetadata>  */
     protected static $modelMetadataPerFqcn = [];
 
     public static function get(string $modelFqcn)
     {
-        if (isset(static::$modelMetadataPerFqcn[$modelFqcn])) {
-            return static::$modelMetadataPerFqcn[$modelFqcn];
+        if (! isset(static::$modelMetadataPerFqcn[$modelFqcn])) {
+            static::$modelMetadataPerFqcn[$modelFqcn] =
+                // TODO dynamically find the model metadata class
+                new ModelMetadata($modelFqcn);
         }
-
-        static::$modelMetadataPerFqcn[$modelFqcn] =
-            // TODO dynamically find the model metadata class
-            new ModelMetadata($modelFqcn);
 
         return static::$modelMetadataPerFqcn[$modelFqcn];
     }

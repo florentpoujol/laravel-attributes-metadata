@@ -1,182 +1,266 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Laravel Model Metadata
 
-This package proposes to create classes that act as the single source of truth for or models and their attributes metadata.
+This package proposes a very simple way to define metadata about our model's attributes, and to use these metadata to infers many things such as
+- database column definition
+- validation rules
+- casts
+- relations
+- Nova fields
 
+It means that instead of littering informations about the attributes all over the place (migration files, PHPDoc, casts, form requests/controller), they are centralized, in a place that is discoverable, cacheable, parsable.
 
-It means that instead of littering information about our attributes all over the place (migration, PHPDoc, casts, form requests/controller), they are centralized, in a place that is discoverable, cacheable, parsable.
-
-This pattern is the basis of Symfony applications where the entity properties themselves define their metadata via annotations, and that information is used almost with zero config to 
-- generate migrations
-- generate full CRUD admin panels
-- build forms and validate them
-- define APIs, again with explicit validation
-- etc...
-
-In addition to defining the attributes metadata themselves this package aims to provide facilities to use these data to setup these same things like migrations, validation, Nova, model relations, and more.
-
+- [Usage](#usage)
+- [Defining metadata](#defining-metadata)
+- [Advanced](#advanced)
 
 
 ## Installation
 
-composer yadi yada
+Via composer
 
+```bash
+composer require florentpoujol/laravel-attributes-medadata
+```
 
-## Simple usage
+## Example
 
-Add the HasAttributeMetadata trait on your models and define a `$attributeMetadata` property. That property, as array
- contain de definitions of each attributes.
- 
-### Defining attributes
+Here is an example of how metadata can be defined, for a traditionnal Post model :
 
 ```php
-use HasAttributeMetadata;
+class PostModel
+{
+    use HasAttributesMetadata;
 
-/** @var array<string, array<int|string, mixed>> */
+    /** @var array<string, array<int|string, mixed>> */
+    protected static $rawAttributesMetadata = [
+        'id' =>           ['increments', 'primary'],
+        'content' =>      ['text', 'required', 'max:500'],
+        'is_published' => ['boolean', 'default' => false],
+        'created_at' =>   ['timestamp' => 2, 'useCurrent', 'datetime' => 'd H:i:s.u'],
+        'user' =>         [BelongTo::class => [UserModel::class]],
+        'comments' =>     [HasMany::class => [CommentModel::class, 'post_foreign']],
+        'meta' =>         ['object', 'default' => '{}'],
+    ];
+}
+```
+
+This is already enough to infer all these informations:
+- `id`
+    - column definition: unsigned integer, autoincrement and with primary key
+    - validation: not included since it is the primary key
+    - cast: integer
+    - Nova field: ID
+- `content`
+    - column definition: text
+    - validation: string, required, max: 500
+    - cast: none (already a string)
+    - Nova field: Textare, with proper validation
+- `is_published`
+    - column definition: boolean, default to false
+    - validation: boolean, nullable
+    - cast: boolean
+    - Nova field: Boolean
+- `created_at`
+    - column definition: timestamp with a precision of 2, and CURRENT_TIMESTAMP() as default value
+    - validation: date, nullable
+    - cast: specified format
+    - Nova field: Text (Nova datetime field doesn't handle fractionnal seconds, otherwise it would have been a Datetime field)
+- `user`
+    - column definition: the same as the user's primary key
+    - validation: exists, with the correct table and column names
+    - cast: none
+    - Nova field: BelongsTo
+- `comments`
+    - column definition: none since a HasMany realtionship
+    - validation: none
+    - cast: none
+    - Nova field: HasMany
+- `meta`
+    - column definition: json, with default value
+    - validation: json, nullable
+    - cast: object
+    - Nova field: Code/Json
+
+
+## Usage
+
+Once defined, you have access to a public static `getMetadata()` method on your models which returns an instance of `ModelMetadata`
+
+### In migrations
+
+```php
+public function up()
+{
+    Schema::create('posts', function (Blueprint $table) {
+        Post::getMetadata()->addColumnsToTable($table);
+    });
+}
+
+public function down()
+{
+    Post::getMetadata()->dropColumnsIfExists();
+}
+```
+
+Currently the package does not do anything more than that regarding migrations, you have to handle reverts and changes yourself, manually.
+
+
+### In validation
+
+```php
+/**
+ * Route: POST /posts
+ */
+public function store(Request $request)
+{
+    $request->validate(Post::getMetadata()->getValidationRules());
+
+    // ...
+}
+```
+
+Validation messages can also be extracted from or defined in the metadata.
+
+In form requests:
+
+```php
+public function rules()
+{
+    return Post::getMetadata()->getValidationRules(); // array<string, array<string|object>>
+}
+
+public function messages()
+{
+    return Post::getMetadata()->getValidationMessages(); // array<string, string>
+}
+```
+
+Or just add the `PopulatesFormRequestFromMetadata` trait and define the `metadataModelFqcn` property.
+
+```php
+class PostFormRequest
+{
+    use PopulatesFormRequestFromMetadata;
+
+    protected $metadataModelFqcn = Post::class;
+}
+````
+
+
+### In Laravel Nova
+
+```php
+public function fields(Request $request)
+{
+    return Post::getMetadata()->getNovaFields($request); // Field[]
+}
+```
+
+The returned fields uses proper type and validation rules, and may depends on the context (if the requet is for an index, a details or a creation or update form).
+
+If all you do in your resource is that, you can replace the method by the `InfersNovaFieldsFromMetadata` trait.
+
+
+### With casts, relations and dynamic attributes
+
+By default, casts and relations must still be defined as before. If you want both to be handled via the metadata, you can add the `HandlesCastsAndRelationsFromMetadata` trait on your models.
+
+Note that it override the `__get`, `__set` and `__call` magic methods, so be careful with conflicts with other traits that may do the same.
+
+Once this is done, you do not need to define casts via the traditionnal `$cast` property (but still can). Moreover you may slightly increase performance by specifying the method that ends up being called, instead of having to resolve that every times. Read more about that below.
+
+For relations, if they are defined in the metadata, you can altogether delete the methods that define them on the model itself.
+
+If an attribute has a getter and/or setter, you can mark it as so to immediately access it without having to resolve it everytimes.
+
+
+## Defining properties
+
+Let's reshow the example
+```php
+class PostModel
+{
+    use HasAttributesMetadata;
+
+    /** @var array<string, array<int|string, mixed>> */
+    protected static $rawAttributesMetadata = [
+        'id' =>           ['increments', 'primary'],
+        'content' =>      ['text', 'required', 'max:500'],
+        'is_published' => ['boolean', 'default' => false],
+        'created_at' =>   ['timestamp' => 2, 'useCurrent', 'datetime' => 'd H:i:s.u'],
+        'user' =>         [BelongTo::class => [UserModel::class]],
+        'comments' =>     [HasMany::class => [CommentModel::class, 'post_foreign']],
+        'meta' =>         ['object', 'default' => '{}'],
+    ];
+}
+```
+
+Add the `HasAttributeMetadata` trait on your models and define a static `$rawAttributesMetadata` property, or implement a static `getRawAttributesMetadata(): array` method if you need/whant to set things up inside a method instead of the body of the model.
+
+The value of the property (or returned by the method) must be an associative array.  
+The attributes names are the keys, the values are arrays which contain the metadata.
+
+Your models can have attributes and relations that are not listed in the metadata, they are completely mandatory.
+
+The content of the metadata actually depends on what you will use them for. If for instance you do not care about migrations, relations and Nova, the above example could be rewritten like so
+```php
 protected static $rawAttributesMetadata = [
-    'id' => ['increments', 'primary'],
-    'content' => ['text', 'required', 'max:500'],
-    'is_published' => ['boolean', 'default' => false],
-    'created_at' => ['timestamp' => 2, 'useCurrent', 'datetime' => 'd H:i:s.u'],
-    'user' => [BelongTo => [UserModel]],
-    'comments' => [HasMany => [CommentModel, 'post_foreign']],
-    'metadata' => ['object', 'default' => '[]'],
+    'content' => ['required', 'max:500'],
+    'is_published' => ['boolean'],
+    'created_at' => ['datetime' => 'd H:i:s.u'],
+    'metadata' => ['object'],
 ];
 ```
 
-This is already enough to infer many things
-- the id attribute is an unsigned integer, autoincrement and primary key. It will thus be casted to int. Since it
- is the primary key, the ID nova field will be used.
-- the content attribute is a mandatory text column in the database, where validation make it mandatory but not more
- than 500 characters. Since it is a text column, the Textarea Nova field will be used
-- the is_published attribute is a nullable boolean with a default value of false. corresponding column attributes
- will be used for migration and nova fields.
-- the created at column is a nullable datetime that is casted to the specified format. Here expressly setting the
- type of field was necessary because we couldn't have guessed if the user whanted a datetime or timestamp field and
-  with how much precisios
-- the user property is a classic belongsTo relationship to the User model
-- the comments property is a HasMany relationship to the Comments models, but for some reason, the foreign key has
- been nammed 'post_foreign' 
- - the metadata attribute is a json column that casts to object
+The metadata should actually match any of the following:
+- any methods on the `\Illuminate\Database\Schema\Blueprint` or `\Illuminate\Database\Schema\ColumnDefinition` fields, and their expected arguments as value (an array when several arguments)
+- a validation rule, and their value for those which have some
+- a cast, and their value for those which have some
+- a relation class name, and its method arguments
+
+When a metadata has no value, it can either be a string value (with a numerical key), or set as a key with `null` as value.  
+This is the same as in the example above: `'is_published' => ['boolean' => null],`.
 
 The order of the properties also define their order in Nova fields.
 
-For simple properties, the expected key/values are
-- follow any methods on the ColumnDefinition fields, and their expected arguments
-- a validation rule. A class name is supposed to be a Rule
-- a cast, and their corresponding values  
+To mark an attribute has non existant in the DB, set the special value `_dynamic` as its first metadata.
 
-Casts and validation rules that have parameters, can either be specified as usual (in the same string with the
- : delimiter) or as an actual separated key/value pair.
- 
 For relations, the key are the relation class name, the values the relation method arguments.
 When defining relations that way you can access both the corresponding method that return the relation instance and
  the attribute that return the result of the relation query.
  
 For relations, the key are the relation class name, the values the relation method arguments.
 
-Note that to be able to define casts or relations this way you also must add another trait: `HandlesCastsAndRelationsFromMetadata
-`
-Note that it override the `__get`, `__set` and `__call` magic methods, so be careful with conflict with other traits that may do the same.
-Without it, you can define casts and relations the usual way.
-
-Once all this is setup, you may make use of the getMetadata() method provided in any of the 4 way possible
-
-getMetadata() > instance of ModelMetadata
-getMetadata('attribute1') > instance of AttributeMetadata
-getMetadata('attribute1', 'attribute2') > assoc collection of AttributeMetadata
-getMetadata(['attribute1', 'attribute2']) > assoc collection of AttributeMetadata
-
-The ModelMetadata instance holds some but is mostly a proxy for the underlying AttributeMetdata instances.
-When using the getmetadata method, it lazily turns the definition array into classes and resolve things as they are
- needed.
-
-- [In migrations]()
-- [In validation]()
-- [In Laravel Nova]()
-
-#### Use the metadata for migrations
-
-```php
-	public function up()
-    {
-        Schema::create('posts', function (Blueprint $table) {
-            (new PostModel)->getMetadata()->getColumnsDefinitions($table);
-        });
-    }
-
-    public function down()
-    {
-        (new PostModel)->getMetadata()->dropColumnsIfExists($attributes = ['*']);
-    }
-```
-
-Currently the package does not do anything more than that regarding migrations, you have to handle reverts and
- changes yourself, manually.
 
 
-### Use the metadata for validation
-
-```php
-	/**
-	 * Route: POST /posts
-	 */
-	public function store(Request $request)
-    {
-    	$request->validate((new Post)->getMetadata()->getCreationValidationRules($attributes = ['*']));
-
-        $validatedAttributes = $request->validateWithMetadata(Post::class, $attributes); // only when the serviceprovider is used
-        // happy path
-    }
-```
-
-Validation messages are also extracted from the metadata.
-
-If your controller is strictly CRUD/resource-full. All you have to do is create an empty controller, with the `HandlesResourcefulControllerFromMetadata` trait
-. Define the related model class via the controller, and that's it.  
-Of course you can override any default behavior by defining the controller actions.
-
-```php
-class PostController
-{
-	use HandlesResourcefulControllerFromMetadata;
-
-	public function __construct()
-	{
-		$this->metadataModelFqcn = Post::class;
-	}
-}
-```
-
-In formrequest :
-
-```php
-public function rules()
-{
-    return (new Post)->getMetadata()->getValidationRules();
-}
-
-public function messages()
-{
-    return Post::getMetadata()->getValidationMessages();
-}
-```
+#### Purpose-specific cases
 
 
-### In Laravel Nova
+
+### List of all possible metadata values (keys)
+
+- `_dynamic`: mark the field as not existing in the database
+- Any that match a public `Blueprint` methods but you only shall set one of them since the call to the first one return an instance of `ColumnDefinition`
+- Any that match a method that you could call on a `ColumnDefinition` instance
+- `unsignedInteger`:
+    - column definition: unsigned integer
+    - validation: integer, min 0
 
 
-You might guess the drill by now :
-
-```php
-public function fields(Request $request)
-{
-    return (new Post)->getMetadata()->getNovaFields($request);
-}
-```
-
-The returned fields uses proper type and validation rules, and may depends on the context (if the requet is for an index, a details or a creation or update form).
-
-If all you do in your resource is that, you can replace the method by the InfersNovaFieldsFromModelMetadata trait
 
 
 
@@ -184,9 +268,6 @@ If all you do in your resource is that, you can replace the method by the Infers
 
 Instead of defining the attributes, and the corresponding PHPDocs directly on the model, you can create a dedicated
  trait, which will do all that so that you only have to "use" YourModelAttribute trait in you base model.
-
-
-
 
 
 

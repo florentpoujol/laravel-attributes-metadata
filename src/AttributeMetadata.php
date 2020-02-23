@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FlorentPoujol\LaravelModelMetadata;
 
 use Illuminate\Database\Schema\Blueprint;
@@ -80,6 +82,8 @@ class AttributeMetadata
     /** @var null|array<string, array<string, null|mixed>> */
     protected static $availableMethods;
 
+    protected $existsInDb = false;
+
     protected function resolveAvailableColumnDefinitionMethods(): void
     {
         if (static::$availableMethods !== null) {
@@ -117,7 +121,10 @@ class AttributeMetadata
 
     protected function resolveColumnDefinition(): void
     {
-        if ($this->columnDefinitionsArray !== null) {
+        if (
+            $this->metadata[0] === '_dynamic' ||
+            $this->columnDefinitionsArray !== null
+        ) {
             return;
         }
 
@@ -164,17 +171,23 @@ class AttributeMetadata
             // then mark it as JSON
             $this->columnDefinitionsArray['table'] = ['json' => null] + $this->columnDefinitionsArray['table'];
         }
+
+        $this->existsInDb = true;
     }
 
     /**
      * @param \Illuminate\Database\Schema\Blueprint $table
      *
-     * @return ColumnDefinition
+     * @return null|ColumnDefinition
      */
-    public function getColumnDefinition(Blueprint $table): ColumnDefinition
+    public function addColumnDefinition(Blueprint $table): ?ColumnDefinition
     {
         if ($this->columnDefinitionsArray === null) {
             $this->resolveColumnDefinition();
+        }
+
+        if (! $this->existsInDb) {
+            return null;
         }
 
         // first extract a method that can be called on the Blueprint object
@@ -259,6 +272,7 @@ class AttributeMetadata
         }
 
         // TODO handle instanciating custom rules
+        // TODO handle exists rule with relations
 
         $this->validationRules['create'] = $rules;
 
@@ -334,7 +348,25 @@ class AttributeMetadata
     // --------------------------------------------------
     // Relations
 
-    protected $relations;
+    /**
+     * @var null|false False when not a relation
+     */
+    protected $relation;
+
+    protected function resolveRelation(): void
+    {
+        // relation fqcn
+        $availableRelations = ['' => null];
+    }
+
+    public function isRelation(): bool
+    {
+        if ($this->relation === null) {
+            $this->resolveRelation();
+        }
+
+        return (bool)$this->relation;
+    }
 
     // --------------------------------------------------
     // Nova fields
