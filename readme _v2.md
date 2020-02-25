@@ -198,12 +198,25 @@ class PostModel
 
     /** @var array<string, array<int|string, mixed>> */
     protected static $rawAttributesMetadata = [
-        'id' =>           ['increments', 'primary'],
-        'content' =>      ['text', 'required', 'max:500'],
-        'is_published' => ['boolean', 'default' => false],
-        'created_at' =>   ['timestamp' => 2, 'useCurrent', 'datetime' => 'd H:i:s.u'],
+        'id' => [
+            'guarded',
+            'column_definitions' => ['increments', 'primary'],
+            'validations' => ['rules' => ['unique:']],
+            'cast' => 'int',
+        ],
+        'content' => (new TextAttrMetadata)
+            ->addValidationRule('max', 500),
+        'is_published' => new BooleanAttrMetadata,
+        'status' => (new EnumAttrMetadata)
+            ->setValues([])
+            ->setDefaultValue(''),
+        'created_at' =>   [
+            'column_definitions' => ['timestamp' => 2, 'useCurrent'],
+            , 'datetime' => 'd H:i:s.u'
+        ],
         'user' =>         [BelongTo::class => [UserModel::class]],
         'comments' =>     [HasMany::class => [CommentModel::class, 'post_foreign']],
+        'dynamic_attr' => ['getter']
         'meta' =>         ['object', 'default' => '{}'],
     ];
 }
