@@ -5,26 +5,23 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelModelMetadata;
 
 /**
- * Main trait to be added on models
- *
- * @property array<string, array<string|object>> $rawAttributesMetadata
  */
 trait HasAttributesMetadata
 {
-    /** @var \FlorentPoujol\LaravelModelMetadata\ModelMetadata */
-    protected static $modelMetadata;
-
-    /**
-     * @return array<string, array<int|string, mixed>>
-     */
-    public function getRawAttributesMetadata(): array
+    public static function bootHasAttributesMetadata(): void
     {
-        if (! property_exists(static::class, 'rawAttributesMetadata')) {
-            static::$rawAttributesMetadata = [];
+        if (! property_exists(static::class, 'modelMetadataFqcn')) {
+            static::$modelMetadataFqcn = '{bse class}';
         }
 
-        return static::$rawAttributesMetadata;
+        static::$modelMetadata = static::$modelMetadataFqcn(
+            static::getAttributesMetadata()
+        );
     }
+
+
+    /** @var \FlorentPoujol\LaravelModelMetadata\ModelMetadata */
+    protected static $modelMetadata;
 
     /**
      * @return \FlorentPoujol\LaravelModelMetadata\ModelMetadata
