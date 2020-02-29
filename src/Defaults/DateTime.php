@@ -13,8 +13,10 @@ class DateTime extends AttributeMetadata
     {
         $this
             ->setColumnType($type)
+            ->addColumnDefinition('useCurrent')
             ->setCast('datetime')
-            ->markDate(true);
+            ->markDate(true)
+            ->setNovaFieldType('datetime');
 
         if ($castFormat !== null) {
             $this->setCast('datetime', $castFormat);

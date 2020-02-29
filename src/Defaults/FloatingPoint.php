@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelModelMetadata;
 
+use Laravel\Nova\Fields\Number;
+
 class FloatingPoint extends AttributeMetadata
 {
     /**
@@ -11,6 +13,8 @@ class FloatingPoint extends AttributeMetadata
      */
     public function __construct(string $type = 'float', array $precision = [8, 2], bool $isUnsigned = true)
     {
+        parent::__construct();
+
         switch ($type) {
             case 'float':
                 $this
@@ -38,7 +42,9 @@ class FloatingPoint extends AttributeMetadata
             ->setValidationRule('min', $boundaries['min'])
             ->setValidationRule('max', $boundaries['max']);
 
-        parent::__construct();
+        $this->novaFieldFqcn = Number::class;
+        $this->setNovaFieldDefinition('step', 1 / max(1, $precision[1] * 10)); // 2 > 0.01
+        // the use of max() is a protection against division by zero and gives a step of 1 when precision is 0
     }
 
     protected function getValueBoundariesFromPrecision(array $precision): array

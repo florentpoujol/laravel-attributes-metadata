@@ -11,6 +11,8 @@ class Set extends AttributeMetadata
      */
     public function __construct(array $allowedValues = null)
     {
+        parent::__construct();
+
         if (!empty($allowedValues)) {
             $this->setAllowedValues($allowedValues);
         }
@@ -18,8 +20,7 @@ class Set extends AttributeMetadata
         $this
             ->addColumnDefinition('set', $this->allowedValues)
             ->setValidationRule('in', $this->allowedValues);
-
-        parent::__construct();
+        // TODO nova field multiselect
     }
 
     /** @var array<string>  */

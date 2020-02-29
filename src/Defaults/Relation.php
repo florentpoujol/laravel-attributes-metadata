@@ -11,17 +11,18 @@ class Relation extends Integer
      */
     public function __construct(string $type, $params, bool $withIndex = false)
     {
+        parent::__construct();
+
         if (!is_array($params)) {
             $params = [$params];
         }
-        $this->setRelation($type, $params);
 
-        $this->markUnsigned(true);
+        $this
+            ->setRelation($type, $params)
+            ->markUnsigned(true);
 
         if ($withIndex) {
             $this->addColumnDefinition('index');
         }
-
-        parent::__construct();
     }
 }

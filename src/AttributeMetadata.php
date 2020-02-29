@@ -4,6 +4,7 @@ namespace FlorentPoujol\LaravelModelMetadata;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
+use Laravel\Nova\Fields\Field;
 
 class AttributeMetadata
 {
@@ -83,10 +84,14 @@ class AttributeMetadata
     /**
      * @param \Illuminate\Database\Schema\Blueprint $table
      *
-     * @return \Illuminate\Database\Schema\ColumnDefinition
+     * @return null|\Illuminate\Database\Schema\ColumnDefinition
      */
-    public function addColumnToTable(Blueprint $table): ColumnDefinition
+    public function addColumnToTable(Blueprint $table): ?ColumnDefinition
     {
+        if (empty($this->columnDefinition)) {
+            return null;
+        }
+
         $type = $this->columnDefinitions['type'];
         $arguments = $type['args'] ?? [];
         if (!is_array($arguments)) {
@@ -128,6 +133,11 @@ class AttributeMetadata
         $columnDefinition = $this->addColumnToTable($table);
 
         return $columnDefinition->change();
+    }
+
+    public function hasColumnInDB(): bool
+    {
+        return empty($this->columnDefinitions);
     }
 
     // --------------------------------------------------
@@ -203,18 +213,138 @@ class AttributeMetadata
     }
 
     // --------------------------------------------------
-    // Nova
+    // Nova Fields
 
-    /*
-    protected $novaFields = [];    
-    public function getNovaFields(): array;
-    public function getNovaIndexField(): Field;
-    public function getNovaDetailsField(): Field;
-    public function getNovaCreateField(): Field;
-    public function getNovaUpdateField(): Field;
+    /** @var array<string, null|\Laravel\Nova\Fields\Field> */
+    protected $novaFields = [
+        'index' => null,
+        'details' => null,
+        'create' => null,
+        'update' => null,
+    ];
 
-    public function setNovaFields(array $fields): self;
-    */
+    /** @var string */
+    protected $novaFieldFqcn;
+
+    /** @var array<string, array>  */
+    protected $novaFieldDefinitions = ['sortable'];
+
+    /**
+     * @param string $typeOrFqcn
+     *
+     * @return $this
+     */
+    public function setNovaFieldType(string $typeOrFqcn): self
+    {
+        $prefix = '\\Laravel\\Nova\\Fields\\';
+
+        $typeOrFqcn = ucfirst($typeOrFqcn);
+        switch ($typeOrFqcn) {
+            case 'String':
+                $typeOrFqcn = $prefix . 'Text';
+                break;
+            case 'Text':
+                $typeOrFqcn = $prefix . 'Textarea';
+                break;
+            case 'Json':
+                $typeOrFqcn = $prefix . 'Code';
+                break;
+            case 'Date':
+            case 'Datetime':
+                $typeOrFqcn = $prefix . 'DateTime';
+                break;
+        }
+
+        $this->novaFieldFqcn = $typeOrFqcn;
+
+        return $this;
+    }
+
+    /**
+     * @param null|mixed $value
+     *
+     * @return $this
+     */
+    public function setNovaFieldDefinition(string $key, $value = null): self
+    {
+        $this->novaFieldDefinitions[$key] = $value;
+
+        return $this;
+    }
+
+    /**
+     * @return $this;
+     */
+    public function removeNovaFieldDefinition(string $key): self
+    {
+        unset($this->novaFieldDefinitions[$key]);
+
+        return $this;
+    }
+
+    /**
+     * @param null|string $page 'index', 'details', 'create', 'update'
+     *
+     * @return null|\Laravel\Nova\Fields\Field
+     */
+    public function getNovaField(string $page = null): ?Field
+    {
+        return
+            $this->novaFields[$page ?: 'index'] ??
+            $this->novaFields['index'] ?? null;
+    }
+
+    /**
+     * @param mixed ...$args
+     *
+     * @return \Laravel\Nova\Fields\Field
+     */
+    public function setupNovaField(...$args): Field
+    {
+
+    }
+
+    /**
+     * @param null|\Laravel\Nova\Fields\Field $field
+     * @param null|string $page 'index', 'details', 'create', 'update'
+     *
+     * @return $this
+     */
+    public function setNovaField($field, string $page = null): self
+    {
+        if ($page !== null) {
+            $this->novaFields[$page] = $field;
+
+            return $this;
+        }
+
+        if ($field === null) {
+            $this->novaFields = [
+                'index' => null,
+                'details' => null,
+                'create' => null,
+                'update' => null,
+            ];
+
+            return $this;
+        }
+
+        // $field is an instance of Field and $page is null
+        if ($field->showOnIndex) {
+            $this->novaFields['index'] = $field;
+        }
+        if ($field->showOnDetail) {
+            $this->novaFields['details'] = $field;
+        }
+        if ($field->showOnCreation) {
+            $this->novaFields['create'] = $field;
+        }
+        if ($field->showOnUpdate) {
+            $this->novaFields['update'] = $field;
+        }
+
+        return $this;
+    }
 
     // --------------------------------------------------
     // cast and mutators
@@ -312,11 +442,20 @@ class AttributeMetadata
     /**
      * @param null|string $method
      * @param array<string> $params
+     *
+     * @return $this
      */
-    public function setRelation(string $method = null, array $params = [])
+    public function setRelation(string $method = null, array $params = []): self
     {
         $this->relationMethod = $method;
         $this->relationParams = $params;
+
+        $this
+            ->setNovaFieldType($method)
+            ->setNovaFieldDefinition('searchable')
+            ->removeNovaFieldDefinition('sortable');
+
+        return $this;
     }
 
     /**
@@ -343,6 +482,12 @@ class AttributeMetadata
     public function markHidden(bool $isHidden = true): self
     {
         $this->isHidden = $isHidden;
+
+        if ($isHidden) {
+            $this
+                ->setNovaFieldDefinition('hideFromIndex')
+                ->setNovaFieldDefinition('hideFromDetails');
+        }
 
         return $this;
     }
@@ -424,9 +569,17 @@ class AttributeMetadata
     {
         $this->isNullable = $isNullable;
 
-        $this
-            ->addColumnDefinition('nullable')
-            ->setValidationRule('nullable');
+        if ($isNullable) {
+            $this
+                ->addColumnDefinition('nullable')
+                ->setValidationRule('nullable')
+                ->setNovaFieldDefinition('nullable');
+        } else {
+            $this
+                ->removeColumnDefinition('nullable')
+                ->removeValidationRule('nullable')
+                ->removeNovaFieldDefinition('nullable');
+        }
 
         return $this;
     }
@@ -448,7 +601,15 @@ class AttributeMetadata
     {
         $this->isRequired = $isRequired;
 
-        $this->setValidationRule('required');
+        if ($isRequired) {
+            $this
+                ->setValidationRule('required')
+                ->setNovaFieldDefinition('required');
+        } else {
+            $this
+                ->removeValidationRule('required')
+                ->removeNovaFieldDefinition('required');
+        }
 
         return $this;
     }
@@ -550,4 +711,6 @@ class AttributeMetadata
     {
         return $this->isIncrementingPrimaryKey;
     }
+
+    // TODO set min, set max which sets it on the validation rule and nova field
 }

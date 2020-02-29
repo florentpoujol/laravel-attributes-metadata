@@ -13,13 +13,13 @@ class Varchar extends AttributeMetadata
      */
     public function __construct(string $type = 'string', int $maxLength = null)
     {
+        parent::__construct();
+
         $maxLength = $maxLength ?: Builder::$defaultStringLength;
 
         $this
             ->setColumnType($type, $maxLength)
-            ->setValidationRule('string')
-            ->setValidationRule('max', $maxLength);
-
-        parent::__construct();
+            ->setValidationRule('max', $maxLength)
+            ->setNovaFieldType('text');
     }
 }

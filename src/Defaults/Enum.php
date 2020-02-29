@@ -11,6 +11,8 @@ class Enum extends AttributeMetadata
      */
     public function __construct(array $allowedValues = null)
     {
+        parent::__construct();
+
         if (!empty($allowedValues)) {
             $this->setAllowedValues($allowedValues);
         }
@@ -18,8 +20,7 @@ class Enum extends AttributeMetadata
         $this
             ->setColumnType('enum', $this->allowedValues)
             ->setValidationRule('in', $this->allowedValues);
-
-        parent::__construct();
+        // todo set nova field type checkboxgroup
     }
 
     /** @var array<string>  */

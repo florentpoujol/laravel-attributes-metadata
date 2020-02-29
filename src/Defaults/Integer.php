@@ -12,6 +12,8 @@ class Integer extends AttributeMetadata
      */
     public function __construct(int $size = 4, bool $isUnsigned = true)
     {
+        parent::__construct();
+
         // reference for boundaries: https://dev.mysql.com/doc/refman/8.0/en/integer-types.html
         switch ($size) {
             case 1:
@@ -44,16 +46,21 @@ class Integer extends AttributeMetadata
             ->setColumnType($field)
             ->setValidationRule('int')
             ->markUnsigned($isUnsigned)
-            ->setCast('int');
+            ->setCast('int')
+            ->setNovaFieldType('number')
+            ->setNovaFieldDefinition('step', 1);
 
         if (isset($min)) {
-            $this->setValidationRule('min', $min);
+            $this
+                ->setValidationRule('min', $min)
+                ->setNovaFieldDefinition('min', $min);
         }
 
         if (isset($max)) {
-            $this->setValidationRule('max', $max);
+            $this
+                ->setValidationRule('max', $max)
+                ->setNovaFieldDefinition('max', $max);
         }
 
-        parent::__construct();
     }
 }
