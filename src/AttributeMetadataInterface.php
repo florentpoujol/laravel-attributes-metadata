@@ -4,11 +4,7 @@ namespace FlorentPoujol\LaravelModelMetadata;
 
 interface AttributeMetadataInterface
 {
-    // -----------------------
-    // general
-
-
-    // -----------------------
+    // --------------------------------------------------
     // validation
 
     protected $columnDefinitions = [];
@@ -17,7 +13,7 @@ interface AttributeMetadataInterface
     public function dropColumnIfExists(): array;
     
 
-    // -----------------------
+    // --------------------------------------------------
     // validation
 
     protected $validationRules = [];
@@ -32,7 +28,7 @@ interface AttributeMetadataInterface
     public function setValidationMessage(array $messages): self;
 
 
-    // ---------------------------
+    // --------------------------------------------------
     // Nova
 
     protected $novaFields = [];    
@@ -45,7 +41,7 @@ interface AttributeMetadataInterface
     public function setNovaFields(array $fields): self;
 
 
-    // ------------------------
+    // --------------------------------------------------
     // cast and mutators
 
     public function setCast(string|object $cast = null): bool;
@@ -63,7 +59,7 @@ interface AttributeMetadataInterface
     public function hasGetter(): bool;
 
 
-    // ------------------------
+    // --------------------------------------------------
     // relations
 
     public function setRelation(string $related = null, array $constructorArgs = [])
@@ -71,7 +67,7 @@ interface AttributeMetadataInterface
 
     public function isRelation(): bool;
 
-    // ------------------------
+    // --------------------------------------------------
     // API to resolve model metadatas
 
     public function markHidden(bool $isHidden = true): self;
@@ -91,4 +87,18 @@ interface AttributeMetadataInterface
 
     public function markDate(bool $isDate = true): self;
     public function isDate(): bool;
+
+    public function markNullable(bool $isNullable = true): self;
+    public function isNullable(): bool;
+
+    public function markRequired(bool $isRequired = true): self;
+    public function isRequired(): bool;
+
+    public function setDefaultValue($value): self;
+    public function getDefaultValue();
+    public function hasDefaultValue(): bool;
+
+    // on ints
+    public function markUnsigned(bool $isUnsigned = true): self;
+    public function isUnsigned(): bool;
 }

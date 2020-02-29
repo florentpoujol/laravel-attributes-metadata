@@ -79,7 +79,9 @@ caractéristiques qui peuvent changer suivant le model où sont utilisé
 - default value
 - possible values (enum/set)
 - length (string/int/float)
-- 
+- name
+- setter/getter
+- position dans la liste des champs Nova (même ordre par défaut que les définitions dans le model)
 
 
 other important metadata to be able to be set
