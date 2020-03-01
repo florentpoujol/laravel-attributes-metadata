@@ -472,7 +472,7 @@ class AttributeMetadata
      */
     public function getRelation(): array
     {
-        return [$this->relationMethod, $this->relationParams];
+        return ['method' => $this->relationMethod, 'parameters' => $this->relationParams];
     }
 
     public function isRelation(): bool

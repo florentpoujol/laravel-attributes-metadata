@@ -34,6 +34,17 @@ trait HasAttributesMetadata
         return static::$modelMetadata;
     }
 
+    public static function getAttributeMetadata(string $name): ?AttributeMetadata
+    {
+        $modelMetadata = static::getMetadata();
+
+        if ($modelMetadata->hasAttribute($name)) {
+            return $modelMetadata->getAttributeMetadata($name);
+        }
+
+        return null;
+    }
+
     /**
      * @param string|array<string> $attributes One or several attribute names to restrict the results to
      *

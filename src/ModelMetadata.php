@@ -23,7 +23,7 @@ class ModelMetadata
     /** @var array<string, string|callable|\FlorentPoujol\LaravelModelMetadata\AttributeMetadata> */
     protected $rawAttrsMetadata;
 
-    public function hasAttributeMetadata(string $name): bool
+    public function hasAttribute(string $name): bool
     {
         return isset($this->rawAttrsMetadata[$name]);
     }
