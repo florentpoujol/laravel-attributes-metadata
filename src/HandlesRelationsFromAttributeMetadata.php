@@ -9,7 +9,7 @@ namespace FlorentPoujol\LaravelModelMetadata;
  *
  * @method static getMetadata(): \FlorentPoujol\LaravelModelMetadata\ModelMetadata
  */
-trait HandlesCastsAndRelationsFromAttributeMetadata
+trait HandlesRelationsFromAttributeMetadata
 {
     /**
      * @return mixed
@@ -34,9 +34,13 @@ trait HandlesCastsAndRelationsFromAttributeMetadata
         return parent::getAttributeValue($key);
     }
 
-    // overridden from the HasAttribute trait
-    public function getRelationValue(string $key, AttributeMetadata $attrMeta = null)
+    /**
+     * @return null|\Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection
+     */
+    public function getRelationValue(string $key)
     {
+        // overridden from the \Illuminate\Database\Eloquent\Concerns\HasAttributes trait
+
         if ($this->relationLoaded($key)) {
             return $this->relations[$key];
         }
@@ -45,32 +49,26 @@ trait HandlesCastsAndRelationsFromAttributeMetadata
             return $this->getRelationshipFromMethod($key);
         }
 
-        // below is the part added from the built-in trait
+        // the current method is called when we are getting an attribute that has no values
+        // in the attributes array and has no getter, so we assume it may be a relation
+        // but since the method doesn't actually exists we need this additional check
+        $attrMeta = static::getAttributeMetadata($key);
         if (
-            $attrMeta = static::getAttributeMetadata($key) !== null &&
+            $attrMeta !== null &&
             $attrMeta->isRelation() &&
             $attrMeta->getRelation()['method'] === $key
         ) {
+            // will call the relation method which will be catched by __call() below
             return $this->getRelationshipFromMethod($key);
         }
 
         return null;
     }
 
-    /**
-     * @return mixed
-     */
     public function __call(string $method, array $arguments = [])
     {
-        /** @var \FlorentPoujol\LaravelModelMetadata\ModelMetadata $modelMetadata */
-        $modelMetadata = static::getMetadata();
-
-        if (! $modelMetadata->hasAttribute($method)) {
-            return parent::__call($method, $arguments);
-        }
-
-        $attrMeta = $modelMetadata->getAttributeMetadata($method);
-        if ($attrMeta->isRelation()) {
+        $attrMeta = static::getAttributeMetadata($method);
+        if ($attrMeta !== null && $attrMeta->isRelation()) {
             $relation = $attrMeta->getRelation();
 
             return $this->$relation['method'](...$relation['parameters']);

@@ -37,6 +37,10 @@ class PostModel
             'comments' => new HasMany([CommentModel::class, 'post_foreign']),
             'meta' => (new Json())->setDefault('{}'),
 
+            // instead of instanciating right away you can use the make
+            'meta' => Json::make(['setDefault' => '{}']),
+
+            // you can also wrap the instanciation in a closure or any callable
             'comments' => function () { return new HasMany(CommentModel::class, 'post_foreign'); },
             // or with PHP7.4+ arrow function
             'meta' => fn() => (new JsonObject())->setDefault('{}'),
@@ -71,7 +75,7 @@ Each models having attribute metadata shall poccess the `HasAttributeMetadata` t
 
 Other ways to define the meta classes:
 - if the instance takes no parameter and should just be intanciated, you can set just the class name, the instance will only be created if really needed
-- use the static make() method, that actually return the class name. It will store the associative array you pass it as argument the when instanciated, map it to the setters of the class
+- wrap the instance creation in a callable, for instance a closure
 
 
 

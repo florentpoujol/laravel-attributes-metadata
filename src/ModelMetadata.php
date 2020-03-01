@@ -94,6 +94,64 @@ class ModelMetadata
     }
 
     /**
+     * @return array<string, mixed> The attributes that have a default values and their values
+     */
+    public function getDefaultValues(): array
+    {
+        return $this
+            ->getAttrCollection()
+            ->filter(function (AttributeMetadata $meta) {
+                return $meta->hasDefaultValue();
+            })
+            ->mapWithKeys(function (AttributeMetadata $meta, string $key) {
+                return [$key => $meta->getDefaultValue()];
+            })
+            ->toArray();
+    }
+
+    /**
+     * @return array<string> The fillable attributes
+     */
+    public function getFillable(): array
+    {
+        return $this
+            ->getAttrCollection()
+            ->filter(function (AttributeMetadata $meta) {
+                return $meta->isFillable();
+            })
+            ->keys()
+            ->toArray();
+    }
+
+    /**
+     * @return array<string> The guarded attributes
+     */
+    public function getGuarded(): array
+    {
+        return $this
+            ->getAttrCollection()
+            ->filter(function (AttributeMetadata $meta) {
+                return $meta->isGuarded();
+            })
+            ->keys()
+            ->toArray();
+    }
+
+    /**
+     * @return array<string> The hidden attributes
+     */
+    public function getHidden(): array
+    {
+        return $this
+            ->getAttrCollection()
+            ->filter(function (AttributeMetadata $meta) {
+                return $meta->isHidden();
+            })
+            ->keys()
+            ->toArray();
+    }
+
+    /**
      * @param null|array<string> $attributes The optional list of attribute names to restrict the results to
      *
      * @return array<string, array<string|object>> Validation rules per attribute name
