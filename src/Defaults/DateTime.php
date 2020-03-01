@@ -11,18 +11,14 @@ class DateTime extends AttributeMetadata
      */
     public function __construct(string $type = 'timestamp', string $castFormat = null)
     {
+        parent::__construct();
+
         $this
             ->setColumnType($type)
             ->addColumnDefinition('useCurrent')
-            ->setCast('datetime')
             ->markDate(true)
-            ->setNovaFieldType('datetime');
-
-        if ($castFormat !== null) {
-            $this->setCast('datetime', $castFormat);
-        }
-
-        parent::__construct();
+            ->setCast('datetime', $castFormat)
+            ->setNovaFieldType($type);
     }
 
     /**
@@ -31,5 +27,17 @@ class DateTime extends AttributeMetadata
     public function setPrecision(int $precision): self
     {
         return $this->setColumnType($this->getColumnType(), $precision);
+    }
+
+    /**
+     * @param string $format Moment.js format (not PHP format)
+     *
+     * @return $this
+     */
+    public function setNovaDisplayFormat(string $format): self
+    {
+        $this->setNovaFieldDefinition('format', $format);
+
+        return $this;
     }
 }

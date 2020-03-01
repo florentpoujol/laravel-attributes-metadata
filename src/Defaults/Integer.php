@@ -35,6 +35,7 @@ class Integer extends AttributeMetadata
                 $field = 'bigInteger';
                 $min = $isUnsigned ? 0 : null;
                 break;
+            case 4:
             default:
                 $field = 'integer';
                 $min = $isUnsigned ? 0 : -2147483648;
@@ -44,8 +45,8 @@ class Integer extends AttributeMetadata
 
         $this
             ->setColumnType($field)
-            ->setValidationRule('int')
             ->markUnsigned($isUnsigned)
+            ->setValidationRule('int')
             ->setCast('int')
             ->setNovaFieldType('number')
             ->setNovaFieldDefinition('step', 1);
@@ -61,6 +62,15 @@ class Integer extends AttributeMetadata
                 ->setValidationRule('max', $max)
                 ->setNovaFieldDefinition('max', $max);
         }
+    }
 
+    /**
+     * @return $this
+     */
+    public function primary(): self
+    {
+        $this->markPrimaryKey(); // int, incrementing, primary
+
+        return $this;
     }
 }

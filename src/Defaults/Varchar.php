@@ -22,4 +22,14 @@ class Varchar extends AttributeMetadata
             ->setValidationRule('max', $maxLength)
             ->setNovaFieldType('text');
     }
+
+    /**
+     * @return $this
+     */
+    public function primary(): self
+    {
+        $this->markPrimaryKey(true, 'string', false); // string, not incrementing
+
+        return $this;
+    }
 }

@@ -240,6 +240,9 @@ class AttributeMetadata
 
         $typeOrFqcn = ucfirst($typeOrFqcn);
         switch ($typeOrFqcn) {
+            case 'Id':
+                $typeOrFqcn = $prefix . 'ID';
+                break;
             case 'String':
                 $typeOrFqcn = $prefix . 'Text';
                 break;
@@ -249,8 +252,8 @@ class AttributeMetadata
             case 'Json':
                 $typeOrFqcn = $prefix . 'Code';
                 break;
-            case 'Date':
             case 'Datetime':
+            case 'Timestamp':
                 $typeOrFqcn = $prefix . 'DateTime';
                 break;
         }
@@ -682,7 +685,7 @@ class AttributeMetadata
     // Primary key
 
     protected $isPrimaryKey = false;
-    protected $primarykeyType = 'int';
+    protected $primaryKeyType = 'int';
     protected $isIncrementingPrimaryKey = true;
 
     /**
@@ -691,8 +694,18 @@ class AttributeMetadata
     public function markPrimaryKey(bool $isPrimaryKey = true, string $keyType = 'int', bool $isIncrementing = true): self
     {
         $this->isPrimaryKey = $isPrimaryKey;
-        $this->primarykeyType = $keyType;
-        $this->isIncrementingPrimaryKey = $this->primarykeyType === 'int' ? $isIncrementing : false;
+        $this->primaryKeyType = $keyType;
+        $this->isIncrementingPrimaryKey = $this->primaryKeyType === 'int' ? $isIncrementing : false;
+
+        if ($this->isPrimaryKey) {
+            $this
+                ->addColumnDefinition('primary')
+                ->setNovaFieldType('id');
+        }
+
+        if ($this->isIncrementingPrimaryKey) {
+            $this->addColumnDefinition('autoIncrement');
+        }
 
         return $this;
     }
@@ -704,7 +717,7 @@ class AttributeMetadata
 
     public function getPrimaryKeyType(): string
     {
-        return $this->primarykeyType;
+        return $this->primaryKeyType;
     }
 
     public function isIncrementingPrimaryKey(): bool

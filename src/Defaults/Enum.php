@@ -19,8 +19,8 @@ class Enum extends AttributeMetadata
 
         $this
             ->setColumnType('enum', $this->allowedValues)
-            ->setValidationRule('in', $this->allowedValues);
-        // todo set nova field type checkboxgroup
+            ->setValidationRule('in', $this->allowedValues)
+            ->setNovaFieldType('select');
     }
 
     /** @var array<string>  */
@@ -36,6 +36,22 @@ class Enum extends AttributeMetadata
         $this->allowedValues = $values;
 
         $this->setValidationRule('in', $values);
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, string> $options
+     *
+     * @return $this
+     */
+    public function setNovaSelectOptions(array $options, bool $displayUsingLabels = true): self
+    {
+        $this->setNovaFieldDefinition('options', $options);
+
+        if ($displayUsingLabels) {
+            $this->setNovaFieldDefinition('displayUsingLabels');
+        }
 
         return $this;
     }
