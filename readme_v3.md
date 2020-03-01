@@ -25,18 +25,21 @@ class PostModel
     {
         return [
             'id' => (new Int())->primary(),
-            'content' => (new Text())->addRule('max', 500),
+            'content' => (new Text())->addValidationRule('max', 500),
             'is_published' => new Boolean(false),
             'user' => new BelongsTo(User::class),
 
             // the configuration of such "custom" field especially if used multiple times throughout the application 
             // 1is a good candidate to be put in its own class that would propably extend the base DateTime
-            'created_at' => (new DateTime)->isTimestamp()->withPrecision(2)->castsTo('datetime', 'd H:i:s.u'),
-            
+            'created_at' => (new DateTime('timestamp', 'd H:i:s.u'))->setPrecision(2),
 
             // configuring instances can also be done via a static factory if it's more you style
-            'comments' => HasMany::make(['params' => [CommentModel::class, 'post_foreign']]),
-            'meta' => JsonObject::make(['default' => '{}']),
+            'comments' => new HasMany([CommentModel::class, 'post_foreign']),
+            'meta' => (new Json())->setDefault('{}'),
+
+            'comments' => function () { return new HasMany(CommentModel::class, 'post_foreign'); },
+            // or with PHP7.4+ arrow function
+            'meta' => fn() => (new JsonObject())->setDefault('{}'),
         ];
     }
     

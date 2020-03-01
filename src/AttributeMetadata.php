@@ -18,7 +18,7 @@ class AttributeMetadata
         return static::class;
     }
 
-    public function __construct()
+    public function setupFromMakeDefinitions(): void
     {
         foreach (self::$makeDefinitions as $methodName => $arguments) {
             if (is_int($methodName)) {
@@ -35,6 +35,12 @@ class AttributeMetadata
             $this->$methodName(...$arguments);
         }
     }
+
+    public function __construct()
+    {
+        //
+    }
+
 
     // --------------------------------------------------
     // Database column definitions
@@ -288,9 +294,9 @@ class AttributeMetadata
     /**
      * @param null|string $page 'index', 'details', 'create', 'update'
      *
-     * @return null|\Laravel\Nova\Fields\Field
+     * @return array<\Laravel\Nova\Fields\Field>
      */
-    public function getNovaField(string $page = null): ?Field
+    public function getNovaFields(string $page = null): array
     {
         return
             $this->novaFields[$page ?: 'index'] ??

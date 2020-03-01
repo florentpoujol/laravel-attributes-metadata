@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelModelMetadata;
 
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Collection;
 
 class ModelMetadata
@@ -12,139 +11,130 @@ class ModelMetadata
     /** @var string */
     protected $modelFqcn;
 
-    public function __construct(string $modelFqcn)
+    public function __construct(string $modelFqcn, array $rawAttributesMetadata)
     {
         $this->modelFqcn = $modelFqcn;
-        $this->attrMetadataObjects = new Collection();
+        $this->rawAttrsMetadata = $rawAttributesMetadata;
 
-        if ($this->rawAttrsMetadata === null) {
-            if (! property_exists($modelFqcn, 'attributesMetadata')) {
-                throw new \LogicException(
-                    "Missing public static property 'attributesMetadata' on model '$modelFqcn'."
-                );
-            }
-
-            $this->rawAttrsMetadata = $modelFqcn::getRawAttributesMetadata();
-            $this->attrNames = array_keys($this->rawAttrsMetadata);
-        }
+        $this->attrNames = array_keys($this->rawAttrsMetadata);
+        $this->attrCollection = new Collection();
     }
 
-    /** @var array<string, array<string|object>> */
+    /** @var array<string, string|callable|\FlorentPoujol\LaravelModelMetadata\AttributeMetadata> */
     protected $rawAttrsMetadata;
+
+    public function hasAttributeMetadata(string $name): bool
+    {
+        return isset($this->rawAttrsMetadata[$name]);
+    }
 
     /** @var string[] List of the model's attributes (that have metadata) */
     protected $attrNames;
 
-    /** @var array<string, \FlorentPoujol\LaravelModelMetadata\AttributeMetadata> */
-    protected $attrMetadataObjects;
-
     /**
-     * @return \FlorentPoujol\LaravelModelMetadata\AttributeMetadata
-     */
-    public function getAttributeMetadata(string $name): AttributeMetadata
-    {
-        if (! in_array($name, $this->attrNames)) {
-            throw new \LogicException(
-                "Attribute '{$this->modelFqcn}->$name' doesn't have metadata"
-            );
-        }
-
-        if (! isset($this->attrMetadataObjects[$name])) {
-            // it is time to instantiate an AttributeMetadata class for the attribute
-            // TODO resolve custom objects
-            $this->attrMetadataObjects[$name] =
-                new AttributeMetadata($this->rawAttrsMetadata[$name]);
-        }
-
-        return $this->attrMetadataObjects[$name];
-    }
-
-    /**
-     * @param array|string ...$attrNames One or several attribute name, or one array of attribute names
-     *
-     * @return array<string, \FlorentPoujol\LaravelModelMetadata\AttributeMetadata>
-     */
-    public function getAttrMetadataObjects(...$attrNames)
-    {
-        if (func_num_args() > 1) {
-            $attrNames = func_get_args();
-        } elseif (is_string($attrNames)) {
-            $attrNames = [$attrNames];
-        }
-
-        $attrNames = array_intersect($this->attrNames, $attrNames); // remove non-existent attributes
-        if (empty($attrNames)) {
-            $attrNames = $this->attrNames;
-        }
-
-        foreach ($attrNames as $name) {
-            if (! isset($this->attrMetadataObjects[$name])) {
-                $this->getAttributeMetadata($name); // create if not exists
-            }
-        }
-
-        return array_intersect_key($this->attrMetadataObjects, $attrNames);
-    }
-
-    /**
-     * @return string[]
+     * @return array<string>
      */
     public function getAttributeNames(): array
     {
         return $this->attrNames;
     }
 
-    public function hasAttribute(string $name): bool
-    {
-        return isset($this->rawAttrsMetadata[$name]);
-    }
+    /** @var \Illuminate\Support\Collection&array<string, \FlorentPoujol\LaravelModelMetadata\AttributeMetadata> */
+    protected $attrCollection;
 
     /**
-     * @param \Illuminate\Database\Schema\Blueprint $table
-     */
-    public function addColumnDefinitions(Blueprint $table): void
-    {
-        foreach ($this->attrMetadataObjects as $name => $metaObject) {
-            $metaObject->addColumnDefinition($table);
-        }
-    }
-
-    /**
-     * @param array|string ...$attributes One or several attribute name, or one array of attribute names
+     * @return \FlorentPoujol\LaravelModelMetadata\AttributeMetadata
      *
-     * @return array<string, array<string|object>>
+     * @throws \LogicException When the attribute has no metadata
      */
-    public function getCreateValidationRules(...$attributes): array
+    public function getAttributeMetadata(string $name): AttributeMetadata
     {
-        $attrMeta = $this->getAttrMetadataObjects(func_get_args());
-
-        $rules = [];
-        foreach ($attrMeta as $name => $metaObject) {
-            $rules[$name] = $metaObject->getCreateValidationRules();
+        if ($this->attrCollection->has($name)) {
+            return $this->attrCollection->get($name);
         }
 
-        return $rules;
+        if (! in_array($name, $this->attrNames)) {
+            throw new \LogicException(
+                "Attribute '{$this->modelFqcn}->$name' doesn't have metadata"
+            );
+        }
+
+        $object = $this->rawAttrsMetadata[$name];
+
+        if (is_callable($object)) {
+            $object = $object();
+        } elseif (is_string($object)) {
+            $object = new $object();
+        }
+
+        $this->attrCollection->put($name, $object);
+
+        return $object;
     }
 
-    // getcastedattributes getcasts
-    // getrelationattributes
-    // getattributesdefaultvalues
-
-
-    // --------------------------------------------------
-    // static
-
-    /** @var array<string, \FlorentPoujol\LaravelModelMetadata\ModelMetadata>  */
-    protected static $modelMetadataPerFqcn = [];
-
-    public static function get(string $modelFqcn)
+    /**
+     * Return all or a subset of the attributes metadata collection
+     *
+     * @param null|array<string> $names
+     *
+     * @return \Illuminate\Support\Collection&array<string, \FlorentPoujol\LaravelModelMetadata\AttributeMetadata>
+     */
+    public function getAttrCollection(array $names = null)
     {
-        if (! isset(static::$modelMetadataPerFqcn[$modelFqcn])) {
-            static::$modelMetadataPerFqcn[$modelFqcn] =
-                // TODO dynamically find the model metadata class
-                new ModelMetadata($modelFqcn);
+        $names = empty($names) ? $this->attrNames : $names;
+
+        $collection = new Collection();
+        foreach ($names as $name) {
+            $collection->put($name, $this->getAttributeMetadata($name));
+            // done like that instead of using the collection's only() method
+            // so that metadata classes are created if they don't exists yet
         }
 
-        return static::$modelMetadataPerFqcn[$modelFqcn];
+        return $collection;
+    }
+
+    /**
+     * @param null|array<string> $attributes The optional list of attribute names to restrict the results to
+     *
+     * @return array<string, array<string|object>> Validation rules per attribute name
+     */
+    public function getValidationRules(array $attributes = null): array
+    {
+         return $this
+            ->getAttrCollection($attributes)
+            ->mapWithKeys(function (AttributeMetadata $meta, string $name) {
+                return [$name => $meta->getValidationRules()];
+            })
+            ->toArray();
+    }
+
+    /**
+     * @param null|array<string> $attributes The optional list of attribute names to restrict the results to
+     *
+     * @return array<string, string> Validation messages per attribute name
+     */
+    public function getValidationMessages(array $attributes = null): array
+    {
+        return $this
+            ->getAttrCollection($attributes)
+            ->mapWithKeys(function (AttributeMetadata $meta, string $name) {
+                return [$name => $meta->getValidationMessage()];
+            })
+            ->toArray();
+    }
+
+    /**
+     * @param null|array<string> $attributes The optional list of attribute names to restrict the results to
+     *
+     * @return array<string, string>
+     */
+    public function getNovaFields(array $attributes = null): array
+    {
+        return $this
+            ->getAttrCollection($attributes)
+            ->flatMap(function (AttributeMetadata $meta) {
+                return $meta->getNovaFields();
+            })
+            ->toArray();
     }
 }
