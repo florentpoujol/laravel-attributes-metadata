@@ -152,6 +152,20 @@ class ModelMetadata
     }
 
     /**
+     * @return array<string> The dates attributes
+     */
+    public function getDates(): array
+    {
+        return $this
+            ->getAttrCollection()
+            ->filter(function (AttributeMetadata $meta) {
+                return $meta->isDate();
+            })
+            ->keys()
+            ->toArray();
+    }
+
+    /**
      * @param null|array<string> $attributes The optional list of attribute names to restrict the results to
      *
      * @return array<string, array<string|object>> Validation rules per attribute name

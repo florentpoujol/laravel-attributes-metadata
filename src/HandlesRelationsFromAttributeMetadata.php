@@ -12,29 +12,6 @@ namespace FlorentPoujol\LaravelModelMetadata;
 trait HandlesRelationsFromAttributeMetadata
 {
     /**
-     * @return mixed
-     */
-    public function getAttributeValue(string $key) // overriden from the HasAttribute trait
-    {
-        $attrMeta = static::getAttributeMetadata($key);
-        if ($attrMeta === null) {
-            return parent::getAttributeValue($key);
-        }
-
-        // this property exists in metadata
-        $value = $this->getAttributeFromArray($key);
-
-        if ($attrMeta->hasCastTarget()) {
-            $target = $attrMeta->getCastTarget();
-            array_unshift($target['parameters'], $value);
-
-            return $this->$target['method'](...$target['parameters']);
-        }
-
-        return parent::getAttributeValue($key);
-    }
-
-    /**
      * @return null|\Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection
      */
     public function getRelationValue(string $key)
