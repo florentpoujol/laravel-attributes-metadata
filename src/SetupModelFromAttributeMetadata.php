@@ -9,7 +9,7 @@ namespace FlorentPoujol\LaravelModelMetadata;
  *
  * @method static getMetadata(): \FlorentPoujol\LaravelModelMetadata\ModelMetadata
  */
-trait SetupModelPropertiesFromAttributeMetadata
+trait SetupModelFromAttributeMetadata
 {
     /** @var null|array<string, mixed> */
     protected static $defaultValues;
@@ -21,7 +21,7 @@ trait SetupModelPropertiesFromAttributeMetadata
 
     protected static function compileDefaultValuesFromMetadata(): void
     {
-        static::$staticFillable = array_merge(
+        static::$defaultValues = array_merge(
             static::getMetadata()->getDefaultValues(),
             // default values already set on the model takes precedence
             (new static())->attributes // property is protected but this is allowed since we are inside the model class
@@ -142,7 +142,7 @@ trait SetupModelPropertiesFromAttributeMetadata
     // --------------------------------------------------
     // Casts
 
-    /** @var array<string, string> */
+    /** @var null|array<string, string> */
     protected static $staticCastTypes;
 
     public function getCastType(string $attribute): string
@@ -154,7 +154,7 @@ trait SetupModelPropertiesFromAttributeMetadata
         return static::$staticCastTypes[$attribute];
     }
 
-    /** @var array<string, string|object> */
+    /** @var null|array<string, string|object> */
     protected static $staticCasts;
 
     public function getCasts(): array
@@ -186,6 +186,63 @@ trait SetupModelPropertiesFromAttributeMetadata
 
             static::$staticCastTypes[$attribute] = trim(strtolower($cast));
         }
+    }
+
+    // --------------------------------------------------
+    // Primary key
+
+    /** @var null|bool */
+    protected static $staticIncrementing;
+
+    /** @var null|string 'int' or 'string' */
+    protected static $staticKeyType;
+
+    /** @var null|string */
+    protected static $staticKeyName;
+
+    public function getIncrementing(): bool
+    {
+        if (static::$staticIncrementing === null) {
+            static::compilePrimaryKeyInfo();
+        }
+
+        return static::$staticIncrementing;
+    }
+
+    public function getKeyType(): string
+    {
+        if (static::$staticKeyType === null) {
+            static::compilePrimaryKeyInfo();
+        }
+
+        return static::$staticKeyType;
+    }
+
+    public function getKeyName(): string
+    {
+        if (static::$staticKeyName === null) {
+            static::compilePrimaryKeyInfo();
+        }
+
+        return static::$staticKeyName;
+    }
+
+    protected function compilePrimaryKeyInfo(): void
+    {
+        $model = new static();
+        static::$staticIncrementing = $model->incrementing;
+        static::$staticKeyType = $model->keyType;
+        static::$staticKeyName = $model->primaryKey;
+
+        /** @var \FlorentPoujol\LaravelModelMetadata\AttributeMetadata $primaryKeyMeta */
+        $primaryKeyMeta = static::getMetadata()->getPrimaryKeyMeta();
+        if ($primaryKeyMeta === null) {
+            return;
+        }
+
+        static::$staticIncrementing = $primaryKeyMeta->isIncrementingPrimaryKey();
+        static::$staticKeyType = $primaryKeyMeta->getPrimaryKeyType();
+        static::$staticKeyName = $primaryKeyMeta->getName() ?: $model->primaryKey;
     }
 }
 

@@ -86,5 +86,4 @@ trait HasAttributesMetadata
 
         return static::getMetadata()->getNovaFields($attributes);
     }
-
 }

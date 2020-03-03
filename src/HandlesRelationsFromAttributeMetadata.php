@@ -42,7 +42,7 @@ trait HandlesRelationsFromAttributeMetadata
         return null;
     }
 
-    public function __call(string $method, array $arguments = [])
+    public function __call(string $method, array $arguments)
     {
         $attrMeta = static::getAttributeMetadata($method);
         if ($attrMeta !== null && $attrMeta->isRelation()) {

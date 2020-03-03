@@ -6,6 +6,9 @@ namespace FlorentPoujol\LaravelModelMetadata;
 
 use Illuminate\Support\Collection;
 
+/**
+ * This class is essentially a proxy for the collection of the model's attribute metadata collection.
+ */
 class ModelMetadata
 {
     /** @var string */
@@ -163,6 +166,15 @@ class ModelMetadata
             })
             ->keys()
             ->toArray();
+    }
+
+    public function getPrimaryKeyMeta(): ?AttributeMetadata
+    {
+        return $this
+            ->getAttrCollection()
+            ->first(function (AttributeMetadata $meta) {
+                return $meta->isPrimaryKey();
+            });
     }
 
     /**

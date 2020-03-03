@@ -178,20 +178,18 @@ The returned fields uses proper type and validation rules, and may depends on th
 
 ### Setting up models from their attribute metadata
 
-It is possible to populate most actual properties used to setup model behavior based on its attributes metadata.
-
-Populatable properties include
-- `$primaryKey`, `$increments` and `$keyType`
+Model behavior is configurable by a bunch of properties on them like the ones below:
+- `$primaryKey`, `$incrementing` and `$keyType`
 - `$guarded`, `$fillable` and `$hidden`
 - `$attributes` (default values)
 - `$dates`
 - `$casts`
 
-You can enable this by adding the `SetupModelFromAttributeMetadata` trait, and you can turn off for each properties individually by setting the corresponding static property to false. Eg : `protected static $setupGuardedFromAttributesMetadata = false;`
-
-Note that this require to eagerly resolve all attributes metadata on model boot.
-
-Note that casts may also be handled dynamically, which has one advantage, read on below.
+If attribute metadata contain the right information, it is possible to altogether forget about any of them
+and just throw the `SetupModelFromAttributeMetadata` trait on the model.  
+The trait do not populate the properties, it overrides the corresponding method of the base model that usually returns the value of the property.
+Any values existing on the properties takes precedence over the values defined in the metadata. 
+ and you can turn off for each properties individually by setting the corresponding static property to false. Eg : `protected static $setupGuardedFromAttributesMetadata = false;`
 
 
 ### Dynamic casts and relations
