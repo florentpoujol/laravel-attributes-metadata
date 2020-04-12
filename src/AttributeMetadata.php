@@ -858,6 +858,29 @@ class AttributeMetadata
     }
 
     /**
+     * @param null|int
+     *
+     * @return $this
+     */
+    public function setMaxLength($value): self
+    {
+        $this->maxValue = $value;
+
+        if ($value !== null) {
+            $this->setValidationRule('max', $value);
+        } else {
+            $this->removeValidationRule('max');
+        }
+
+        $columnType = $this->getColumnType();
+        if ($columnType === 'string' || $columnType === 'char') {
+            $this->setColumnType($columnType, $value);
+        }
+
+        return $this;
+    }
+
+    /**
      * @return null|int|float
      */
     public function getMaxValue()
