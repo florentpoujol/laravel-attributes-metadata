@@ -2,51 +2,56 @@
 
 # Laravel Model Metadata
 
-More than providing actual features, this package proposes a way and some facilities to define all metadata about model attributes in a single place.
+This package proposes a way and some facilities to define all metadata about model attributes in a single place.
 
-The idea is to have a single place to edit when you want to add an attribute to a model, instead of having to edit the PHPDoc and cast on the model, the migrations, the validation rules in the form requests/controllers, the Nova resource, etc...
+The idea is to have a single place to edit when you want to add an attribute to a model, instead of having to edit the 
+PHPDoc and cast on the model, the migrations, the validation rules in the form requests/controllers, the Nova resource, etc...
 
-Better yet, if several models use the same kind of attribute that has always the same properties (say a VAT field that is always a decimal(4,1) in the DB, has always the same decimal:1 cast, the same Nova field, etc...), changing these properties in that one place would effect everywhere they are used automatically.
+Better yet, if several models use the same kind of attribute that has always the same properties (say a VAT field that 
+is always a `decimal(4,1)` in the DB, has always the same `decimal:1` cast, the same Nova field, etc...), changing these
+properties in that one place would effect everywhere they are used automatically.
 
+Attribute metadata are defined in dedicated classes that you map to your model attributes 
 
-## Example
+## Quick Example
 
-Here is an example of how metadata can be defined, for a traditionnal Post model :
+Here is an example of how metadata can be defined, for a traditional `Post` model :
 
 ```php
-class PostModel
+class PostModel extends LaravelBaseModel
 {
     use HasAttributesMetadata;
 
     /** 
-     * @return array<string, AttributeMetadata> 
+     * @return array<string, string|AttributeMetadata> 
      */
-    public static function getAttributeMetadata(): array
+    public static function getAttributesMetadata(): array
     {
         return [
             'id' => (new Int())->primary(),
-            'content' => (new Text())->addValidationRule('max', 500),
+            'content' => (new Text())->setMaxLength(500)->markRequired(),
             'is_published' => new Boolean(false),
+            'meta' => (new Json())->setDefault('{}')->setCast('array'),
+
+            // relations can also be defined this way
             'user' => new BelongsTo(User::class),
+            'comments' => new HasMany([CommentModel::class, 'post_foreign']),
 
             // the configuration of such "custom" field especially if used multiple times throughout the application 
-            // 1is a good candidate to be put in its own class that would propably extend the base DateTime
+            // is a good candidate to be put in its own class that would probably extend the base DateTime
             'created_at' => (new DateTime('timestamp', 'd H:i:s.u'))->setPrecision(2),
 
-            // configuring instances can also be done via a static factory if it's more you style
-            'comments' => new HasMany([CommentModel::class, 'post_foreign']),
-            'meta' => (new Json())->setDefault('{}'),
-
-            // instead of instanciating right away you can use the make
-            'meta' => Json::make(['setDefault' => '{}']),
-
-            // you can also wrap the instanciation in a closure or any callable
-            'comments' => function () { return new HasMany(CommentModel::class, 'post_foreign'); },
+            // instead of creating instances right away you can also : 
+            // 1) set the attribute class Fqcn, if the instance do not need to be configured at all after instantiation
+            'slug' => Slug::class,
+            // 2) use the static make() "factory" that return the class Fqcn, but that will configure the instance of the class as soon as it is created (see below for caveats)
+            'meta' => Json::make(['setDefault' => '{}', 'setCast' => 'array']),
+            // 3) wrap the instantiation in a closure or any callable
+            'comments' => function () { return new HasMany([CommentModel::class, 'post_foreign']); },
             // or with PHP7.4+ arrow function
-            'meta' => fn() => (new JsonObject())->setDefault('{}'),
+            'comments' => fn() => new HasMany([CommentModel::class, 'post_foreign']),
         ];
     }
-    
 }
 ```
 
