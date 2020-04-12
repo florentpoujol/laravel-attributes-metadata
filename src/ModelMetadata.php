@@ -66,9 +66,12 @@ class ModelMetadata
 
         if (is_callable($object)) {
             $object = $object();
-        } elseif (is_string($object)) {
+        } elseif (is_string($object)) { // Fqcn
             $object = new $object();
         }
+
+        /** @var \FlorentPoujol\LaravelModelMetadata\AttributeMetadata $object */
+        $object->setName($name);
 
         $this->attrCollection->put($name, $object);
 

@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelModelMetadata;
 
 /**
- * To be added on model classes that have casts or relations defined in their metadata.
+ * To be added on model classes that have relations defined in their metadata.
  *
- * @method static getMetadata(): \FlorentPoujol\LaravelModelMetadata\ModelMetadata
+ * @mixin \Illuminate\Database\Eloquent\Model
+ * @mixin \FlorentPoujol\LaravelModelMetadata\HasAttributesMetadata
  */
 trait SetupModelFromAttributeMetadata
 {
@@ -145,7 +146,12 @@ trait SetupModelFromAttributeMetadata
     /** @var null|array<string, string> */
     protected static $staticCastTypes;
 
-    public function getCastType(string $attribute): string
+    /**
+     * @param string $key
+     *
+     * @return string
+     */
+    public function getCastType(string $attribute)
     {
         if (static::$staticCasts === null) {
             static::compileCasts();
@@ -169,8 +175,8 @@ trait SetupModelFromAttributeMetadata
     protected static function compileCasts(): void
     {
         static::$staticCasts = array_merge(
-            static::getMetadata()->getCasts(),
-            (new static())->casts
+            (new static())->casts,
+            static::getMetadata()->getCasts()
         );
 
         static::$staticCastTypes = [];

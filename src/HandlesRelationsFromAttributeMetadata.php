@@ -8,6 +8,9 @@ namespace FlorentPoujol\LaravelModelMetadata;
  * To be added on model classes that have casts or relations defined in their metadata.
  *
  * @method static getMetadata(): \FlorentPoujol\LaravelModelMetadata\ModelMetadata
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
+ * @mixin \FlorentPoujol\LaravelModelMetadata\HasAttributesMetadata
  */
 trait HandlesRelationsFromAttributeMetadata
 {
@@ -27,7 +30,7 @@ trait HandlesRelationsFromAttributeMetadata
         }
 
         // the current method is called when we are getting an attribute that has no values
-        // in the attributes array and has no getter, so we assume it may be a relation
+        // in the 'attributes' array and has no getter, so we assume it may be a relation
         // but since the method doesn't actually exists we need this additional check
         $attrMeta = static::getAttributeMetadata($key);
         if (
