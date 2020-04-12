@@ -72,7 +72,6 @@ class ModelMetadata
 
         /** @var \FlorentPoujol\LaravelModelMetadata\AttributeMetadata $object */
         $object->setName($name);
-
         $this->attrCollection->put($name, $object);
 
         return $object;

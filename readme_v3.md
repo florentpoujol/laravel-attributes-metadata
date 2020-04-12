@@ -82,7 +82,7 @@ Other ways to define the meta classes:
 
 
 
-## Usage
+## Usage of `HasAttributeMetadata` trait
 
 Once the `HasAttributeMetadata` trait is added on a model, you have access to a bunch of static methods and to a public static `getMetadata()` method on your models which returns an instance of `ModelMetadata`
 
@@ -131,38 +131,6 @@ public function fields(Request $request)
 
 The returned fields uses proper type and validation rules, and may depends on the context (if the request is for an index, a details or a creation or update form).
 
-
-
-### Setting up models from their attribute metadata
-
-Model behavior is configurable by a bunch of properties on them like the ones below:
-- `$primaryKey`, `$incrementing` and `$keyType`
-- `$guarded`, `$fillable` and `$hidden`
-- `$attributes` (default values)
-- `$dates`
-- `$casts`
-
-If attribute metadata contain the right information, it is possible to altogether forget about any of them and just add the `SetupModelFromAttributeMetadata` trait on the model.  
-The trait do not populate the properties, it overrides the corresponding methods of the base model that usually returns the value of the property.
-So as always with traits be careful if you have overridden one of these methods, yourself or any package, there may be conflict.
-   
-**Any values existing on the properties takes precedence over the values defined in the metadata.** 
-
-Note that when using this trait all metadata instance are resolved on model boot.
-
-
-### Dynamic relations
-
-If you want relations to be handled via the metadata, you can add the `HandlesRelationsFromAttributeMetadata` trait on your models.
-
-Note that it override the `__call` magic methods, so be careful with conflicts with other traits that may do the same.
-
-If relations are defined in the metadata, you do not need anymore to define them as actual method on the model itself.
-But you still can, and those hardcoded in the model class will take precedence.    
-Of course you can still access them both as a method -that return a Relationship instance- and as property -that returns the result of the DB query-.
-
-
-
 ### In migrations
 
 For very simple cases, or projects that do not evolve or for which it is ok to run `php artisan migrate:fresh` for every attribute change, you can use these methods.
@@ -205,6 +173,36 @@ php artisan fpoujol:attr-meta:make:migration "\App\Post" slug content
 It will be an update migration if we can find a file name that contain `CreatePostsTable` in the migration directory.
 
 Make sure to inspect the file afterward, to fix the `down()` method that is never handled automaticaly for updates and make sure the content of the `up()` is also actually ok.
+
+
+## Setting up models from their attribute metadata
+
+Model behavior is configurable by a bunch of properties on them like the ones below:
+- `$primaryKey`, `$incrementing` and `$keyType`
+- `$guarded`, `$fillable` and `$hidden`
+- `$attributes` (default values)
+- `$dates`
+- `$casts`
+
+If attribute metadata contain the right information, it is possible to altogether forget about any of them and just add the `SetupModelFromAttributeMetadata` trait on the model.  
+The trait do not populate the properties, it overrides the corresponding methods of the base model that usually returns the value of the property.
+So as always with traits be careful if you have overridden one of these methods, yourself or any package, there may be conflict.
+   
+**Any values existing on the properties takes precedence over the values defined in the metadata.** 
+
+Note that when using this trait all metadata instance are resolved on model boot.
+
+
+## Dynamic relations
+
+If you want relations to be handled via the metadata, you can add the `HandlesRelationsFromAttributeMetadata` trait on your models.
+
+Note that it override the `__call` magic methods, so be careful with conflicts with other traits that may do the same.
+
+If relations are defined in the metadata, you do not need anymore to define them as actual method on the model itself.
+But you still can, and those hardcoded in the model class will take precedence.    
+Of course you can still access them both as a method -that return a Relationship instance- and as property -that returns the result of the DB query-.
+
 
 
 

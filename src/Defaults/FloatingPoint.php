@@ -39,11 +39,10 @@ class FloatingPoint extends AttributeMetadata
 
         $boundaries = $this->getValueBoundariesFromPrecision($precision);
         $this
-            ->setValidationRule('min', $boundaries['min'])
-            ->setValidationRule('max', $boundaries['max']);
-
-        $this->novaFieldFqcn = Number::class;
-        $this->setNovaFieldDefinition('step', 1 / max(1, $precision[1] * 10)); // 2 > 0.01
+            ->setNovaFieldType('number')
+            ->setMinValue($boundaries['min'])
+            ->setMaxValue($boundaries['max'])
+            ->setStep(1 / max(1, $precision[1] * 10)); // 2 => 0.01
         // the use of max() is a protection against division by zero and gives a step of 1 when precision is 0
     }
 

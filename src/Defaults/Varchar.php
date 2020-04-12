@@ -20,7 +20,8 @@ class Varchar extends AttributeMetadata
         $this
             ->setColumnType($type, $maxLength)
             ->setValidationRule('max', $maxLength)
-            ->setNovaFieldType('text');
+            ->setNovaFieldType('text')
+            ->setNovaFieldDefinition('sortable');
     }
 
     /**

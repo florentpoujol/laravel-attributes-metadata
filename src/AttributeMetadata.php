@@ -61,13 +61,13 @@ class AttributeMetadata
 
     /**
      * Keys are method names of the \Illuminate\Database\Schema\ColumnDefinition class
-     * Values are argument(s), if any of these methods
+     * Values are argument(s), if any, of these methods
      *
      * There is one special column definition key : 'type'
      * It itself has a value as array with 'method' and 'args' keys which match
      * the method (and arguments) to be called first on the \Illuminate\Database\Schema\Blueprint class
      *
-     * @var array<string, mixed>
+     * @var array<string, null|mixed|array<mixed>>
      */
     protected $columnDefinitions = [];
 
@@ -262,7 +262,7 @@ class AttributeMetadata
     /** @var array<string, null|\Laravel\Nova\Fields\Field> */
     protected $novaFields = [
         'index' => null,
-        'details' => null,
+        'detail' => null,
         'create' => null,
         'update' => null,
     ];
@@ -270,8 +270,10 @@ class AttributeMetadata
     /** @var string */
     protected $novaFieldFqcn;
 
-    /** @var array<string, array>  */
-    protected $novaFieldDefinitions = ['sortable'];
+    /** @var array<string, null|mixed|array<mixed>>  */
+    protected $novaFieldDefinitions = [
+        'sortable' => null
+    ];
 
     /**
      * @param string $typeOrFqcn
@@ -280,29 +282,27 @@ class AttributeMetadata
      */
     public function setNovaFieldType(string $typeOrFqcn): self
     {
-        $prefix = '\\Laravel\\Nova\\Fields\\';
-
         $typeOrFqcn = ucfirst($typeOrFqcn);
         switch ($typeOrFqcn) {
             case 'Id':
-                $typeOrFqcn = $prefix . 'ID';
+                $typeOrFqcn = 'ID';
                 break;
             case 'String':
-                $typeOrFqcn = $prefix . 'Text';
+                $typeOrFqcn = 'Text';
                 break;
             case 'Text':
-                $typeOrFqcn = $prefix . 'Textarea';
+                $typeOrFqcn = 'Textarea';
                 break;
             case 'Json':
-                $typeOrFqcn = $prefix . 'Code';
+                $typeOrFqcn = 'Code';
                 break;
             case 'Datetime':
             case 'Timestamp':
-                $typeOrFqcn = $prefix . 'DateTime';
+                $typeOrFqcn = 'DateTime';
                 break;
         }
 
-        $this->novaFieldFqcn = $typeOrFqcn;
+        $this->novaFieldFqcn = '\\Laravel\\Nova\\Fields\\' . $typeOrFqcn;
 
         return $this;
     }
@@ -401,7 +401,7 @@ class AttributeMetadata
 
     /**
      * @param null|string|object $cast
-     * @param string $value For casts that value values, like decimal or datetime
+     * @param string $value For casts that have values, like decimal or datetime
      *
      * @return $this
      */
@@ -618,14 +618,20 @@ class AttributeMetadata
 
         if ($isNullable) {
             $this
-                ->addColumnDefinition('nullable')
                 ->setValidationRule('nullable')
                 ->setNovaFieldDefinition('nullable');
+
+            if ($affectDbColumn) {
+                $this->addColumnDefinition('nullable');
+            }
         } else {
             $this
-                ->removeColumnDefinition('nullable')
                 ->removeValidationRule('nullable')
                 ->removeNovaFieldDefinition('nullable');
+
+            if ($affectDbColumn) {
+                $this->removeColumnDefinition('nullable');
+            }
         }
 
         return $this;
@@ -642,6 +648,8 @@ class AttributeMetadata
     protected $isRequired = false;
 
     /**
+     * Mark/unmark the validation rule and the Nova field as being 'required'
+     *
      * @return $this
      */
     public function markRequired(bool $isRequired = true): self
@@ -672,15 +680,26 @@ class AttributeMetadata
     protected $isUnsigned = false;
 
     /**
+     * Mark/unmark
+     * - the field definition as being unsigned (only positive)
+     * - the validation rule as being 'numeric' and 'min:0'
+     *
      * @return $this
      */
     public function markUnsigned(bool $isUnsigned = true): self
     {
         $this->isUnsigned = $isUnsigned;
 
-        $this
-            ->addColumnDefinition('unsigned')
-            ->setValidationRule('min', 0);
+        if ($isUnsigned) {
+            $this
+                ->addColumnDefinition('unsigned')
+                ->setValidationRule('numeric', 0)
+                ->setMinValue(0);
+        } else {
+            $this
+                ->removeColumnDefinition('unsigned')
+                ->setMinValue(null);
+        }
 
         return $this;
     }
@@ -745,6 +764,10 @@ class AttributeMetadata
             $this
                 ->addColumnDefinition('primary')
                 ->setNovaFieldType('id');
+        } else {
+            $this
+                ->removeColumnDefinition('primary')
+                ->removeColumnDefinition('autoIncrement');
         }
 
         if ($this->isIncrementingPrimaryKey) {
@@ -769,5 +792,105 @@ class AttributeMetadata
         return $this->isIncrementingPrimaryKey;
     }
 
-    // TODO set min, set max which sets it on the validation rule and nova field
+    // --------------------------------------------------
+    // Min / Max / Step
+
+    /** @var int|float */
+    protected $minValue;
+
+    /**
+     * @param null|int|float $value
+     *
+     * @return $this
+     */
+    public function setMinValue($value): self
+    {
+        $this->minValue = $value;
+
+        if ($value !== null) {
+            if ($value < 0 && $this->isUnsigned()) {
+                throw new \LogicException("Provided minimum value is '$value' but attribute is marked as unsigned.");
+            }
+
+            $this
+                ->setValidationRule('min', $value)
+                ->setNovaFieldDefinition('min', $value);
+        } else {
+            $this
+                ->removeValidationRule('min')
+                ->removeNovaFieldDefinition('min');
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return null|int|float
+     */
+    public function getMinValue()
+    {
+        return $this->minValue;
+    }
+
+    /** @var int|float */
+    protected $maxValue;
+
+    /**
+     * @param null|int|float $value
+     *
+     * @return $this
+     */
+    public function setMaxValue($value): self
+    {
+        $this->maxValue = $value;
+
+        if ($value !== null) {
+            $this
+                ->setValidationRule('max', $value)
+                ->setNovaFieldDefinition('max', $value);
+        } else {
+            $this
+                ->removeValidationRule('max')
+                ->removeNovaFieldDefinition('max');
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return null|int|float
+     */
+    public function getMaxValue()
+    {
+        return $this->maxValue;
+    }
+
+    /** @var null|int|float */
+    protected $step;
+
+    /**
+     * @param null|int|float $value
+     *
+     * @return $this
+     */
+    public function setStep($value): self
+    {
+        $this->step = $value;
+
+        if ($value !== null) {
+            $this->setNovaFieldDefinition('step', $value);
+        } else {
+            $this->removeNovaFieldDefinition('step');
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return null|int|float
+     */
+    public function getStep()
+    {
+        return $this->step;
+    }
 }

@@ -31,15 +31,16 @@ class Integer extends AttributeMetadata
                 $min = $isUnsigned ? 0 : -8388608;
                 $max = $isUnsigned ? 16777215 : 8388607;
                 break;
-            case 8:
-                $field = 'bigInteger';
-                $min = $isUnsigned ? 0 : null;
-                break;
             case 4:
             default:
                 $field = 'integer';
                 $min = $isUnsigned ? 0 : -2147483648;
                 $max = $isUnsigned ? 4294967295 : 2147483647;
+                break;
+            case 8:
+                $field = 'bigInteger';
+                $min = $isUnsigned ? 0 : null;
+                // $max = a LOT...
                 break;
         }
 
@@ -52,15 +53,11 @@ class Integer extends AttributeMetadata
             ->setNovaFieldDefinition('step', 1);
 
         if (isset($min)) {
-            $this
-                ->setValidationRule('min', $min)
-                ->setNovaFieldDefinition('min', $min);
+            $this->setMinValue($min);
         }
 
         if (isset($max)) {
-            $this
-                ->setValidationRule('max', $max)
-                ->setNovaFieldDefinition('max', $max);
+            $this->setMaxValue($max);
         }
     }
 
