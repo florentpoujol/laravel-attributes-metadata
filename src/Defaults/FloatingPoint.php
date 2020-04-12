@@ -9,7 +9,7 @@ use Laravel\Nova\Fields\Number;
 class FloatingPoint extends AttributeMetadata
 {
     /**
-     * @param array<int> $precision An array of two ints, the first is the total number of digits and the second one the number of decimal places after the coma.
+     * @param array<int> $precision An array of two integers, the first is the total number of digits and the second one the number of decimal places after the coma.
      */
     public function __construct(string $type = 'float', array $precision = [8, 2], bool $isUnsigned = true)
     {

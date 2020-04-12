@@ -23,7 +23,7 @@ class Enum extends AttributeMetadata
             ->setNovaFieldType('select');
     }
 
-    /** @var array<string>  */
+    /** @var array<string> */
     protected $allowedValues = [];
 
     /**

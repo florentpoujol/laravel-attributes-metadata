@@ -13,14 +13,14 @@ class AttributeMetadata
 
     public static function make(array $definitions): string
     {
-        static::$makeDefinitions = [];
+        static::$makeDefinitions = $definitions;
 
         return static::class;
     }
 
     public function setupFromMakeDefinitions(): void
     {
-        foreach (self::$makeDefinitions as $methodName => $arguments) {
+        foreach (static::$makeDefinitions as $methodName => $arguments) {
             if (is_int($methodName)) {
                 $methodName = $arguments;
                 $arguments = [];
@@ -41,11 +41,19 @@ class AttributeMetadata
         //
     }
 
-
     // --------------------------------------------------
     // Database column definitions
 
-    /** @var array<string|int, mixed> */
+    /**
+     * Keys are method names of the \Illuminate\Database\Schema\ColumnDefinition class
+     * Values are argument(s), if any of these methods
+     *
+     * There is one special column definition key : 'type'
+     * It itself has a value as array with 'method' and 'args' keys which match
+     * the method (and arguments) to be called first on the \Illuminate\Database\Schema\Blueprint class
+     *
+     * @var array<string, mixed>
+     */
     protected $columnDefinitions = [];
 
     /**
@@ -65,12 +73,11 @@ class AttributeMetadata
     }
 
     /**
-     * @param string $key
      * @param null|mixed $value
      *
      * @return $this
      */
-    public function addColumnDefinition($key, $value = null): self
+    public function addColumnDefinition(string $key, $value = null): self
     {
         $this->columnDefinitions[$key] = $value;
 
@@ -149,7 +156,12 @@ class AttributeMetadata
     // --------------------------------------------------
     // Validation
 
-    /** @var array<string, mixed> */
+    /**
+     * Keys are rule name, or Fqcn when they are objects.
+     * Values are full rules (with "arguments" after the semicolon, if any) or instances.
+     *
+     * @var array<string, string|object>
+     */
     protected $validationRules = [];
 
     /**
@@ -157,7 +169,7 @@ class AttributeMetadata
      */
     public function getValidationRules(): array
     {
-        return $this->validationRules;
+        return array_values($this->validationRules);
     }
 
     /**
@@ -167,21 +179,32 @@ class AttributeMetadata
      */
     public function setValidationRules(array $rules): self
     {
-        $this->validationRules = $rules;
+        $this->validationRules = [];
+
+        foreach ($rules as $rule) {
+            $this->setValidationRule($rule);
+        }
 
         return $this;
     }
 
     /**
      * @param string|object $rule
-     * @param mixed $value
+     * @param null|mixed $value
      *
      * @return $this
      */
     public function setValidationRule($rule, $value = null): self
     {
-        if ($value === null && is_string($rule) && strpos($rule, ':') !== false) {
-            [$rule, $value] = explode(':', $rule, 2);
+        if ($value === null) {
+            $value = $rule;
+        }
+
+        if (is_string($rule) && strpos($rule, ':') !== false) {
+            // for the rules that takes "arguments" after a semicolon like 'exists', or 'in'
+            $rule = explode(':', $rule, 2)[0];
+        } elseif (is_object($rule)) {
+            $rule = get_class($rule);
         }
 
         $this->validationRules[$rule] = $value;

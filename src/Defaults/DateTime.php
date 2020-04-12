@@ -7,7 +7,7 @@ namespace FlorentPoujol\LaravelModelMetadata;
 class DateTime extends AttributeMetadata
 {
     /**
-     * @param string $type 'timestamp', 'datetime', 'date'
+     * @param string $type 'timestamp', 'datetime' or 'date'
      */
     public function __construct(string $type = 'timestamp', string $castFormat = null)
     {

@@ -6,6 +6,9 @@ namespace FlorentPoujol\LaravelModelMetadata;
 
 class Text extends AttributeMetadata
 {
+    /**
+     * @param string $size 'text', 'medium' or 'long'
+     */
     public function __construct(string $size = 'text')
     {
         parent::__construct();
