@@ -28,8 +28,6 @@ class Enum extends AttributeMetadata
 
     /**
      * @param array<string> $values
-     *
-     * @return $this
      */
     public function setAllowedValues(array $values): self
     {
@@ -42,8 +40,6 @@ class Enum extends AttributeMetadata
 
     /**
      * @param array<string, string> $options
-     *
-     * @return $this
      */
     public function setNovaSelectOptions(array $options, bool $displayUsingLabels = true): self
     {

@@ -21,9 +21,6 @@ class DateTime extends AttributeMetadata
             ->setNovaFieldType($type);
     }
 
-    /**
-     * @return $this
-     */
     public function setPrecision(int $precision): self
     {
         return $this->setColumnType($this->getColumnType(), $precision);
@@ -31,8 +28,6 @@ class DateTime extends AttributeMetadata
 
     /**
      * @param string $format Moment.js format (not PHP format)
-     *
-     * @return $this
      */
     public function setNovaDisplayFormat(string $format): self
     {

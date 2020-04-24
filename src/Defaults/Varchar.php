@@ -24,9 +24,6 @@ class Varchar extends AttributeMetadata
             ->setNovaFieldDefinition('sortable');
     }
 
-    /**
-     * @return $this
-     */
     public function primary(): self
     {
         $this->markPrimaryKey(true, 'string', false); // string, not incrementing

@@ -61,9 +61,6 @@ class Integer extends AttributeMetadata
         }
     }
 
-    /**
-     * @return $this
-     */
     public function primary(): self
     {
         $this->markPrimaryKey(); // int, incrementing, primary

@@ -89,8 +89,6 @@ class AttributeMetadata
 
     /**
      * @param null|mixed $value
-     *
-     * @return $this
      */
     public function addColumnDefinition(string $key, $value = null): self
     {
@@ -99,9 +97,6 @@ class AttributeMetadata
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     public function removeColumnDefinition(string $key): self
     {
         unset($this->columnDefinitions[$key]);
@@ -189,8 +184,6 @@ class AttributeMetadata
 
     /**
      * @param array<string|object> $rules
-     *
-     * @return $this
      */
     public function setValidationRules(array $rules): self
     {
@@ -206,8 +199,6 @@ class AttributeMetadata
     /**
      * @param string|object $rule
      * @param null|mixed $value
-     *
-     * @return $this
      */
     public function setValidationRule($rule, $value = null): self
     {
@@ -229,8 +220,6 @@ class AttributeMetadata
 
     /**
      * @param string|object $rule
-     *
-     * @return $this
      */
     public function removeValidationRule($rule): self
     {
@@ -246,9 +235,6 @@ class AttributeMetadata
         return $this->validationMessage ?: '';
     }
 
-    /**
-     * @return $this
-     */
     public function setValidationMessage(string $message): self
     {
         $this->validationMessage = $message;
@@ -277,8 +263,6 @@ class AttributeMetadata
 
     /**
      * @param string $typeOrFqcn
-     *
-     * @return $this
      */
     public function setNovaFieldType(string $typeOrFqcn): self
     {
@@ -309,8 +293,6 @@ class AttributeMetadata
 
     /**
      * @param null|mixed $value
-     *
-     * @return $this
      */
     public function setNovaFieldDefinition(string $key, $value = null): self
     {
@@ -319,9 +301,6 @@ class AttributeMetadata
         return $this;
     }
 
-    /**
-     * @return $this;
-     */
     public function removeNovaFieldDefinition(string $key): self
     {
         unset($this->novaFieldDefinitions[$key]);
@@ -354,8 +333,6 @@ class AttributeMetadata
     /**
      * @param null|\Laravel\Nova\Fields\Field $field
      * @param null|string $page 'index', 'details', 'create', 'update'
-     *
-     * @return $this
      */
     public function setNovaField($field, string $page = null): self
     {
@@ -402,8 +379,6 @@ class AttributeMetadata
     /**
      * @param null|string|object $cast
      * @param string $value For casts that have values, like decimal or datetime
-     *
-     * @return $this
      */
     public function setCast($cast, string $value = null): self
     {
@@ -489,8 +464,6 @@ class AttributeMetadata
     /**
      * @param null|string $method
      * @param array<string> $params
-     *
-     * @return $this
      */
     public function setRelation(string $method = null, array $params = []): self
     {
@@ -523,9 +496,6 @@ class AttributeMetadata
 
     protected $isHidden = false;
 
-    /**
-     * @return $this
-     */
     public function markHidden(bool $isHidden = true): self
     {
         $this->isHidden = $isHidden;
@@ -549,9 +519,6 @@ class AttributeMetadata
 
     protected $isGuarded = false;
 
-    /**
-     * @return $this
-     */
     public function markGuarded(bool $isGuarded = true): self
     {
         $this->isGuarded = $isGuarded;
@@ -569,9 +536,6 @@ class AttributeMetadata
 
     protected $isFillable = true;
 
-    /**
-     * @return $this
-     */
     public function markFillable(bool $isFillable = true): self
     {
         $this->isFillable = $isFillable;
@@ -589,9 +553,6 @@ class AttributeMetadata
 
     protected $isDate = false;
 
-    /**
-     * @return $this
-     */
     public function markDate(bool $isDate = true): self
     {
         $this->isDate = $isDate;
@@ -609,9 +570,6 @@ class AttributeMetadata
 
     protected $isNullable = false;
 
-    /**
-     * @return $this
-     */
     public function markNullable(bool $isNullable = true, bool $affectDbColumn = false): self
     {
         $this->isNullable = $isNullable;
@@ -649,8 +607,6 @@ class AttributeMetadata
 
     /**
      * Mark/unmark the validation rule and the Nova field as being 'required'
-     *
-     * @return $this
      */
     public function markRequired(bool $isRequired = true): self
     {
@@ -683,8 +639,6 @@ class AttributeMetadata
      * Mark/unmark
      * - the field definition as being unsigned (only positive)
      * - the validation rule as being 'numeric' and 'min:0'
-     *
-     * @return $this
      */
     public function markUnsigned(bool $isUnsigned = true): self
     {
@@ -717,8 +671,6 @@ class AttributeMetadata
 
     /**
      * @param null|mixed $value
-     *
-     * @return $this
      */
     public function setDefaultValue($value, bool $affectDbColumn = false): self
     {
@@ -751,9 +703,6 @@ class AttributeMetadata
     protected $primaryKeyType = 'int';
     protected $isIncrementingPrimaryKey = true;
 
-    /**
-     * @return $this
-     */
     public function markPrimaryKey(bool $isPrimaryKey = true, string $keyType = 'int', bool $isIncrementing = true): self
     {
         $this->isPrimaryKey = $isPrimaryKey;
@@ -800,8 +749,6 @@ class AttributeMetadata
 
     /**
      * @param null|int|float $value
-     *
-     * @return $this
      */
     public function setMinValue($value): self
     {
@@ -837,8 +784,6 @@ class AttributeMetadata
 
     /**
      * @param null|int|float $value
-     *
-     * @return $this
      */
     public function setMaxValue($value): self
     {
@@ -859,8 +804,6 @@ class AttributeMetadata
 
     /**
      * @param null|int
-     *
-     * @return $this
      */
     public function setMaxLength($value): self
     {
@@ -893,8 +836,6 @@ class AttributeMetadata
 
     /**
      * @param null|int|float $value
-     *
-     * @return $this
      */
     public function setStep($value): self
     {

@@ -28,8 +28,6 @@ class Set extends AttributeMetadata
 
     /**
      * @param array<string> $values
-     *
-     * @return $this
      */
     public function setAllowedValues(array $values): self
     {
