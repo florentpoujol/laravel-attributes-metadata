@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FlorentPoujol\LaravelModelMetadata;
 
 use Illuminate\Database\Schema\Blueprint;
@@ -28,7 +30,7 @@ class AttributeMetadata
 
             if ($arguments === null) {
                 $arguments = [];
-            } elseif (!is_array($arguments)) {
+            } elseif (! is_array($arguments)) {
                 $arguments = [$arguments];
             }
 
@@ -117,7 +119,7 @@ class AttributeMetadata
 
         $type = $this->columnDefinitions['type'];
         $arguments = $type['args'] ?? [];
-        if (!is_array($arguments)) {
+        if (! is_array($arguments)) {
             $arguments = [$arguments];
         }
 
@@ -136,7 +138,7 @@ class AttributeMetadata
 
             if ($arguments === null) {
                 $arguments = [];
-            } elseif (!is_array($arguments)) {
+            } elseif (! is_array($arguments)) {
                 $arguments = [$arguments];
             }
 
@@ -261,9 +263,6 @@ class AttributeMetadata
         'sortable' => null
     ];
 
-    /**
-     * @param string $typeOrFqcn
-     */
     public function setNovaFieldType(string $typeOrFqcn): self
     {
         $typeOrFqcn = ucfirst($typeOrFqcn);
@@ -317,7 +316,7 @@ class AttributeMetadata
     {
         return
             $this->novaFields[$page ?: 'index'] ??
-            $this->novaFields['index'] ?? null;
+            $this->novaFields['index'] ?? [];
     }
 
     /**

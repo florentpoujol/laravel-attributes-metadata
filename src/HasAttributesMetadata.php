@@ -23,12 +23,13 @@ trait HasAttributesMetadata
 
         $modelMetadataFqcn = ModelMetadata::class;
         if (property_exists(static::class, 'modelMetadataFqcn')) {
+            /** @noinspection PhpUndefinedFieldInspection */
             $modelMetadataFqcn = static::$modelMetadataFqcn;
         }
 
         static::$modelMetadata = new $modelMetadataFqcn(
-            static::class,
-            static::getAttributesMetadata()
+            static::class, // model Fqcn
+            static::getAttributesMetadata() // attribute metadata definitions
         );
 
         return static::$modelMetadata;
@@ -52,7 +53,7 @@ trait HasAttributesMetadata
      */
     public static function getValidationRules($attributes = []): array
     {
-        if (!is_array($attributes)) {
+        if (! is_array($attributes)) {
             $attributes = [$attributes];
         }
 
@@ -66,7 +67,7 @@ trait HasAttributesMetadata
      */
     public static function getValidationMessages($attributes = []): array
     {
-        if (!is_array($attributes)) {
+        if (! is_array($attributes)) {
             $attributes = [$attributes];
         }
 
@@ -80,7 +81,7 @@ trait HasAttributesMetadata
      */
     public static function getNovaFields($attributes = []): array
     {
-        if (!is_array($attributes)) {
+        if (! is_array($attributes)) {
             $attributes = [$attributes];
         }
 

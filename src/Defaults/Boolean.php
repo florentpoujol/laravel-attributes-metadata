@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelModelMetadata;
 
-class Boolean_ extends AttributeMetadata
+class Boolean extends AttributeMetadata
 {
     public function __construct(bool $defaultValue = null)
     {

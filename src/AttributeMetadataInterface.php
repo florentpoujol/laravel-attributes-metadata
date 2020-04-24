@@ -2,6 +2,8 @@
 
 namespace FlorentPoujol\LaravelModelMetadata;
 
+use FlorentPoujol\LaravelModelMetadata\Relations\Relation;
+
 interface AttributeMetadataInterface
 {
     // --------------------------------------------------
@@ -11,7 +13,6 @@ interface AttributeMetadataInterface
     public function addColumnToTable(Blueprint $table): array;
     public function updateColumnFromTable(Blueprint $table): array;
     public function dropColumnIfExists(): array;
-    
 
     // --------------------------------------------------
     // validation
@@ -27,11 +28,10 @@ interface AttributeMetadataInterface
     public function getValidationMessage(): array;
     public function setValidationMessage(array $messages): self;
 
-
     // --------------------------------------------------
     // Nova
 
-    protected $novaFields = [];    
+    protected $novaFields = [];
     public function getNovaFields(): array;
     public function getNovaIndexField(): Field;
     public function getNovaDetailsField(): Field;
@@ -39,7 +39,6 @@ interface AttributeMetadataInterface
     public function getNovaUpdateField(): Field;
 
     public function setNovaFields(array $fields): self;
-
 
     // --------------------------------------------------
     // cast and mutators
@@ -57,7 +56,6 @@ interface AttributeMetadataInterface
 
     public function markHasGetter(bool $hasGetter = true): self;
     public function hasGetter(): bool;
-
 
     // --------------------------------------------------
     // relations
