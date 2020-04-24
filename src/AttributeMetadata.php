@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelModelMetadata;
 
+use FlorentPoujol\LaravelModelMetadata\Providers\BaseProvider;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
 use Laravel\Nova\Fields\Field;
@@ -59,314 +60,97 @@ class AttributeMetadata
     }
 
     // --------------------------------------------------
-    // Database column definitions
+    // Providers
+
+    /** @var array<string, \FlorentPoujol\LaravelModelMetadata\Providers\BaseProvider>  */
+    protected $providers = [];
 
     /**
-     * Keys are method names of the \Illuminate\Database\Schema\ColumnDefinition class
-     * Values are argument(s), if any, of these methods
-     *
-     * There is one special column definition key : 'type'
-     * It itself has a value as array with 'method' and 'args' keys which match
-     * the method (and arguments) to be called first on the \Illuminate\Database\Schema\Blueprint class
-     *
-     * @var array<string, null|mixed|array<mixed>>
+     * @param \FlorentPoujol\LaravelModelMetadata\Providers\BaseProvider $provider
      */
-    protected $columnDefinitions = [];
-
-    /**
-     * @param string $type Must match one of the public methods of the Blueprint class
-     * @param null|mixed $value one or several (as array) arguments for the type's method
-     */
-    public function setColumnType(string $type, $value = null)
+    public function addProvider(BaseProvider $provider)
     {
-        $this->columnDefinitions['type'] = ['method' => $type, 'args' => $value];
-
-        return $this;
+        $this->providers[get_class($provider)] = $provider;
     }
 
-    public function getColumnType(): ?string
+    public function getProvider(string $providerFqcn): ?BaseProvider
     {
-        return $this->columnDefinitions['type']['method'] ?? null;
+        return $this->providers[$providerFqcn] ?? null;
     }
 
     /**
-     * @param null|mixed $value
+     * @return array<string, \FlorentPoujol\LaravelModelMetadata\Providers\BaseProvider>
      */
-    public function addColumnDefinition(string $key, $value = null): self
+    public function getProviders(): array
     {
-        $this->columnDefinitions[$key] = $value;
-
-        return $this;
-    }
-
-    public function removeColumnDefinition(string $key): self
-    {
-        unset($this->columnDefinitions[$key]);
-
-        return $this;
-    }
-
-    /**
-     * @param \Illuminate\Database\Schema\Blueprint $table
-     *
-     * @return null|\Illuminate\Database\Schema\ColumnDefinition
-     */
-    public function addColumnToTable(Blueprint $table): ?ColumnDefinition
-    {
-        if (empty($this->columnDefinition)) {
-            return null;
-        }
-
-        $type = $this->columnDefinitions['type'];
-        $arguments = $type['args'] ?? [];
-        if (! is_array($arguments)) {
-            $arguments = [$arguments];
-        }
-
-        /** @var \Illuminate\Database\Schema\ColumnDefinition $columnDefinition */
-        $columnDefinition = $table->$type['method'](...$arguments);
-
-        foreach ($this->columnDefinitions as $methodName => $arguments) {
-            if ($methodName === 'type') {
-                continue;
-            }
-
-            if (is_int($methodName)) {
-                $methodName = $arguments;
-                $arguments = [];
-            }
-
-            if ($arguments === null) {
-                $arguments = [];
-            } elseif (! is_array($arguments)) {
-                $arguments = [$arguments];
-            }
-
-            $columnDefinition->$methodName(...$arguments);
-        }
-
-        return $columnDefinition;
-    }
-
-    /**
-     * @param \Illuminate\Database\Schema\Blueprint $table
-     *
-     * @return \Illuminate\Database\Schema\ColumnDefinition
-     */
-    public function updateColumnToTable(Blueprint $table): ColumnDefinition
-    {
-        $columnDefinition = $this->addColumnToTable($table);
-
-        return $columnDefinition->change();
-    }
-
-    public function hasColumnInDB(): bool
-    {
-        return empty($this->columnDefinitions);
-    }
-
-    // --------------------------------------------------
-    // Validation
-
-    /**
-     * Keys are rule name, or Fqcn when they are objects.
-     * Values are full rules (with "arguments" after the semicolon, if any) or instances.
-     *
-     * @var array<string, string|object>
-     */
-    protected $validationRules = [];
-
-    /**
-     * @return array<string|object>
-     */
-    public function getValidationRules(): array
-    {
-        return array_values($this->validationRules);
-    }
-
-    /**
-     * @param array<string|object> $rules
-     */
-    public function setValidationRules(array $rules): self
-    {
-        $this->validationRules = [];
-
-        foreach ($rules as $rule) {
-            $this->setValidationRule($rule);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param string|object $rule
-     * @param null|mixed $value
-     */
-    public function setValidationRule($rule, $value = null): self
-    {
-        if ($value === null) {
-            $value = $rule;
-        }
-
-        if (is_string($rule) && strpos($rule, ':') !== false) {
-            // for the rules that takes "arguments" after a semicolon like 'exists', or 'in'
-            $rule = explode(':', $rule, 2)[0];
-        } elseif (is_object($rule)) {
-            $rule = get_class($rule);
-        }
-
-        $this->validationRules[$rule] = $value;
-
-        return $this;
-    }
-
-    /**
-     * @param string|object $rule
-     */
-    public function removeValidationRule($rule): self
-    {
-        unset($this->validationRules[$rule]);
-
-        return $this;
-    }
-
-    protected $validationMessage = '';
-
-    public function getValidationMessage(): string
-    {
-        return $this->validationMessage ?: '';
-    }
-
-    public function setValidationMessage(string $message): self
-    {
-        $this->validationMessage = $message;
-
-        return $this;
-    }
-
-    // --------------------------------------------------
-    // Nova Fields
-
-    /** @var array<string, null|\Laravel\Nova\Fields\Field> */
-    protected $novaFields = [
-        'index' => null,
-        'detail' => null,
-        'create' => null,
-        'update' => null,
-    ];
-
-    /** @var string */
-    protected $novaFieldFqcn;
-
-    /** @var array<string, null|mixed|array<mixed>>  */
-    protected $novaFieldDefinitions = [
-        'sortable' => null
-    ];
-
-    public function setNovaFieldType(string $typeOrFqcn): self
-    {
-        $typeOrFqcn = ucfirst($typeOrFqcn);
-        switch ($typeOrFqcn) {
-            case 'Id':
-                $typeOrFqcn = 'ID';
-                break;
-            case 'String':
-                $typeOrFqcn = 'Text';
-                break;
-            case 'Text':
-                $typeOrFqcn = 'Textarea';
-                break;
-            case 'Json':
-                $typeOrFqcn = 'Code';
-                break;
-            case 'Datetime':
-            case 'Timestamp':
-                $typeOrFqcn = 'DateTime';
-                break;
-        }
-
-        $this->novaFieldFqcn = '\\Laravel\\Nova\\Fields\\' . $typeOrFqcn;
-
-        return $this;
-    }
-
-    /**
-     * @param null|mixed $value
-     */
-    public function setNovaFieldDefinition(string $key, $value = null): self
-    {
-        $this->novaFieldDefinitions[$key] = $value;
-
-        return $this;
-    }
-
-    public function removeNovaFieldDefinition(string $key): self
-    {
-        unset($this->novaFieldDefinitions[$key]);
-
-        return $this;
-    }
-
-    /**
-     * @param null|string $page 'index', 'details', 'create', 'update'
-     *
-     * @return array<\Laravel\Nova\Fields\Field>
-     */
-    public function getNovaFields(string $page = null): array
-    {
-        return
-            $this->novaFields[$page ?: 'index'] ??
-            $this->novaFields['index'] ?? [];
+        return $this->providers;
     }
 
     /**
      * @param mixed ...$args
      *
-     * @return \Laravel\Nova\Fields\Field
+     * @return mixed
      */
-    public function setupNovaField(...$args): Field
+    public function __call(string $method, ...$args)
     {
+        $isGetter = strpos($method, 'get') === 0;
 
+        foreach ($this->getProviders() as $provider) {
+            if (method_exists($provider, $method)) {
+                $returnValue = $provider->$method(...$args);
+
+                if ($isGetter) {
+                    return $returnValue;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    // --------------------------------------------------
+    // Raw
+
+    /**
+     * @var array<string, mixed> Raw list of metadatas ans an associative array
+     */
+    protected $raw = [];
+
+    public function hasMeta(string $name): bool
+    {
+        return array_key_exists($name, $this->raw);
     }
 
     /**
-     * @param null|\Laravel\Nova\Fields\Field $field
-     * @param null|string $page 'index', 'details', 'create', 'update'
+     * @return null|mixed $value
      */
-    public function setNovaField($field, string $page = null): self
+    public function setMeta(string $name, $value)
     {
-        if ($page !== null) {
-            $this->novaFields[$page] = $field;
+        return $this->raw[$name] = $value;
+    }
 
-            return $this;
-        }
+    /**
+     * @return null|mixed
+     */
+    public function getMeta(string $name, $default = null)
+    {
+        return $this->raw[$name] ?? $default;
+    }
 
-        if ($field === null) {
-            $this->novaFields = [
-                'index' => null,
-                'details' => null,
-                'create' => null,
-                'update' => null,
-            ];
+    public function getMetas(): array
+    {
+        return $this->raw;
+    }
 
-            return $this;
-        }
+    protected function unsetIfEmpty(string $name, $value): void
+    {
+        if (empty($value)) {
+            unset($this->raw[$name]);
 
-        // $field is an instance of Field and $page is null
-        if ($field->showOnIndex) {
-            $this->novaFields['index'] = $field;
-        }
-        if ($field->showOnDetail) {
-            $this->novaFields['details'] = $field;
-        }
-        if ($field->showOnCreation) {
-            $this->novaFields['create'] = $field;
-        }
-        if ($field->showOnUpdate) {
-            $this->novaFields['update'] = $field;
+            return;
         }
 
-        return $this;
+        $this->raw[$name] = $value;
     }
 
     // --------------------------------------------------
@@ -454,6 +238,8 @@ class AttributeMetadata
     // --------------------------------------------------
     // Relation
 
+    public const RELATION = 'relation';
+
     /** @var null|string The name of the relation, on the base Eloquent model that return the relation instance */
     protected $relationMethod;
 
@@ -466,13 +252,21 @@ class AttributeMetadata
      */
     public function setRelation(string $method = null, array $params = []): self
     {
-        $this->relationMethod = $method;
-        $this->relationParams = $params;
+        if ($method === null) {
+            $this->unsetIfEmpty(self::RELATION, null);
 
-        $this
-            ->setNovaFieldType($method)
-            ->setNovaFieldDefinition('searchable')
-            ->removeNovaFieldDefinition('sortable');
+            return $this;
+        }
+
+        $this->setMeta(self::RELATION, [
+            'method' => $this->relationMethod,
+            'parameters' => $this->relationParams
+        ]);
+
+        // $this
+        //     ->setNovaFieldType($method)
+        //     ->setNovaFieldDefinition('searchable')
+        //     ->removeNovaFieldDefinition('sortable');
 
         return $this;
     }
@@ -533,151 +327,152 @@ class AttributeMetadata
     // --------------------------------------------------
     // Fillable
 
-    protected $isFillable = true;
+    public const FILLABLE = 'FILLABLE';
 
-    public function markFillable(bool $isFillable = true): self
+    public function setFillable(bool $isFillable = true): self
     {
-        $this->isFillable = $isFillable;
+        $this->unsetIfEmpty(self::FILLABLE, $isFillable);
 
         return $this;
     }
 
     public function isFillable(): bool
     {
-        return $this->isFillable;
+        return $this->hasMeta(self::FILLABLE);
     }
 
     // --------------------------------------------------
     // Date
 
-    protected $isDate = false;
+    public const DATE = 'date';
 
-    public function markDate(bool $isDate = true): self
+    public function setDate(bool $isDate = true): self
     {
-        $this->isDate = $isDate;
+        $this->unsetIfEmpty(self::DATE, $isDate);
 
         return $this;
     }
 
     public function isDate(): bool
     {
-        return $this->isDate;
+        return $this->getMeta(self::DATE, false);
     }
 
     // --------------------------------------------------
     // Nullable
 
-    protected $isNullable = false;
+    public const NULLABLE = 'nullable';
 
-    public function markNullable(bool $isNullable = true, bool $affectDbColumn = false): self
+    public function setNullable(bool $isNullable = true, bool $affectDbColumn = false): self
     {
         $this->isNullable = $isNullable;
 
-        if ($isNullable) {
-            $this
-                ->setValidationRule('nullable')
-                ->setNovaFieldDefinition('nullable');
-
-            if ($affectDbColumn) {
-                $this->addColumnDefinition('nullable');
-            }
-        } else {
-            $this
-                ->removeValidationRule('nullable')
-                ->removeNovaFieldDefinition('nullable');
-
-            if ($affectDbColumn) {
-                $this->removeColumnDefinition('nullable');
-            }
-        }
+        // if ($isNullable) {
+        //     $this
+        //         ->setValidationRule('nullable')
+        //         ->setNovaFieldDefinition('nullable');
+        //
+        //     if ($affectDbColumn) {
+        //         $this->addColumnDefinition('nullable');
+        //     }
+        // } else {
+        //     $this
+        //         ->removeValidationRule('nullable')
+        //         ->removeNovaFieldDefinition('nullable');
+        //
+        //     if ($affectDbColumn) {
+        //         $this->removeColumnDefinition('nullable');
+        //     }
+        // }
 
         return $this;
     }
 
     public function isNullable(): bool
     {
-        return $this->isNullable;
+        return $this->raw[self::NULLABLE] ?? false;
     }
 
     // --------------------------------------------------
     // Required
 
-    protected $isRequired = false;
+    public const REQUIRED = 'required';
 
     /**
      * Mark/unmark the validation rule and the Nova field as being 'required'
      */
-    public function markRequired(bool $isRequired = true): self
+    public function setRequired(bool $isRequired = true): self
     {
-        $this->isRequired = $isRequired;
+        $this->raw[self::REQUIRED] = $isRequired;
 
-        if ($isRequired) {
-            $this
-                ->setValidationRule('required')
-                ->setNovaFieldDefinition('required');
-        } else {
-            $this
-                ->removeValidationRule('required')
-                ->removeNovaFieldDefinition('required');
-        }
+        // if ($isRequired) {
+        //     $this
+        //         ->setValidationRule('required')
+        //         ->setNovaFieldDefinition('required');
+        // } else {
+        //     $this
+        //         ->removeValidationRule('required')
+        //         ->removeNovaFieldDefinition('required');
+        // }
 
         return $this;
     }
 
     public function isRequired(): bool
     {
-        return $this->isRequired;
+        return $this->raw[self::REQUIRED] ?? false;
     }
 
     // --------------------------------------------------
     // Unsigned
 
-    protected $isUnsigned = false;
+    public const UNSIGNED = 'unsigned';
 
     /**
      * Mark/unmark
      * - the field definition as being unsigned (only positive)
      * - the validation rule as being 'numeric' and 'min:0'
      */
-    public function markUnsigned(bool $isUnsigned = true): self
+    public function setUnsigned(bool $isUnsigned = true): self
     {
-        $this->isUnsigned = $isUnsigned;
+        $this->unsetIfEmpty(self::UNSIGNED, $isUnsigned);
 
-        if ($isUnsigned) {
-            $this
-                ->addColumnDefinition('unsigned')
-                ->setValidationRule('numeric', 0)
-                ->setMinValue(0);
-        } else {
-            $this
-                ->removeColumnDefinition('unsigned')
-                ->setMinValue(null);
-        }
+        // if ($isUnsigned) {
+        //     $this
+        //         ->addColumnDefinition('unsigned')
+        //         ->setValidationRule('numeric', 0)
+        //         ->setMinValue(0);
+        // } else {
+        //     $this
+        //         ->removeColumnDefinition('unsigned')
+        //         ->setMinValue(null);
+        // }
 
         return $this;
     }
 
     public function isUnsigned(): bool
     {
-        return $this->isUnsigned;
+        return $this->getMeta(self::UNSIGNED, false);
     }
 
     // --------------------------------------------------
     // Default value
 
-    /** @var null|mixed */
-    protected $defaultValue;
+    public const DEFAULT_VALUE = 'default_value';
 
     /**
      * @param null|mixed $value
      */
     public function setDefaultValue($value, bool $affectDbColumn = false): self
     {
-        $this->defaultValue = $value;
+        $this->unsetIfEmpty(self::DEFAULT_VALUE, $value);
 
-        if ($affectDbColumn) {
-            $this->addColumnDefinition('default', $value);
-        }
+        // if ($affectDbColumn) {
+        //     $this->addColumnDefinition('default', $value);
+        // }
+        //
+        // $this->__call('setDefaultValue', $value);
 
         return $this;
     }
@@ -687,12 +482,12 @@ class AttributeMetadata
      */
     public function getDefaultValue()
     {
-        return $this->defaultValue;
+        return $this->getMeta(self::DEFAULT_VALUE);
     }
 
     public function hasDefaultValue(): bool
     {
-        return $this->defaultValue !== null;
+        return $this->hasMeta(self::DEFAULT_VALUE);
     }
 
     // --------------------------------------------------
@@ -743,29 +538,14 @@ class AttributeMetadata
     // --------------------------------------------------
     // Min / Max / Step
 
-    /** @var int|float */
-    protected $minValue;
+    public const MIN_VALUE = 'min_value';
 
     /**
      * @param null|int|float $value
      */
     public function setMinValue($value): self
     {
-        $this->minValue = $value;
-
-        if ($value !== null) {
-            if ($value < 0 && $this->isUnsigned()) {
-                throw new \LogicException("Provided minimum value is '$value' but attribute is marked as unsigned.");
-            }
-
-            $this
-                ->setValidationRule('min', $value)
-                ->setNovaFieldDefinition('min', $value);
-        } else {
-            $this
-                ->removeValidationRule('min')
-                ->removeNovaFieldDefinition('min');
-        }
+        $this->unsetIfEmpty(self::MIN_VALUE, $value);
 
         return $this;
     }
@@ -775,49 +555,17 @@ class AttributeMetadata
      */
     public function getMinValue()
     {
-        return $this->minValue;
+        return $this->raw[self::MAX_VALUE] ?? null;
     }
 
-    /** @var int|float */
-    protected $maxValue;
+    public const MAX_VALUE = 'max_value';
 
     /**
      * @param null|int|float $value
      */
     public function setMaxValue($value): self
     {
-        $this->maxValue = $value;
-
-        if ($value !== null) {
-            $this
-                ->setValidationRule('max', $value)
-                ->setNovaFieldDefinition('max', $value);
-        } else {
-            $this
-                ->removeValidationRule('max')
-                ->removeNovaFieldDefinition('max');
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param null|int
-     */
-    public function setMaxLength($value): self
-    {
-        $this->maxValue = $value;
-
-        if ($value !== null) {
-            $this->setValidationRule('max', $value);
-        } else {
-            $this->removeValidationRule('max');
-        }
-
-        $columnType = $this->getColumnType();
-        if ($columnType === 'string' || $columnType === 'char') {
-            $this->setColumnType($columnType, $value);
-        }
+        $this->unsetIfEmpty(self::MAX_VALUE, $value);
 
         return $this;
     }
@@ -827,24 +575,23 @@ class AttributeMetadata
      */
     public function getMaxValue()
     {
-        return $this->maxValue;
+        return $this->raw[self::MAX_VALUE] ?? null;
     }
 
-    /** @var null|int|float */
-    protected $step;
+    public const STEP = 'step';
 
     /**
      * @param null|int|float $value
      */
     public function setStep($value): self
     {
-        $this->step = $value;
+        $this->unsetIfEmpty(self::STEP, $value);
 
-        if ($value !== null) {
-            $this->setNovaFieldDefinition('step', $value);
-        } else {
-            $this->removeNovaFieldDefinition('step');
-        }
+        // if ($value !== null) {
+        //     $this->setNovaFieldDefinition('step', $value);
+        // } else {
+        //     $this->removeNovaFieldDefinition('step');
+        // }
 
         return $this;
     }
@@ -854,6 +601,55 @@ class AttributeMetadata
      */
     public function getStep()
     {
-        return $this->step;
+        return $this->raw[self::STEP] ?? null;
+    }
+
+    public const MIN_LENGTH = 'min_length';
+    /**
+     * @param null|int
+     */
+    public function setMinLength($value): self
+    {
+        $this->unsetIfEmpty(self::MAX_LENGTH, $value);
+
+        return $this;
+    }
+
+    /**
+     * @return null|int|float
+     */
+    public function getMinLength()
+    {
+        return $this->raw[self::MAX_LENGTH] ?? null;
+    }
+
+    public const MAX_LENGTH = 'max_length';
+    /**
+     * @param null|int
+     */
+    public function setMaxLength($value): self
+    {
+        $this->unsetIfEmpty(self::MAX_LENGTH, $value);
+
+        // if ($value !== null) {
+        //     $this->setValidationRule('max', $value);
+        // } else {
+        //     $this->removeValidationRule('max');
+        // }
+        //
+        // $columnType = $this->getColumnType();
+        // if ($columnType === 'string' || $columnType === 'char') {
+        //     $this->setColumnType($columnType, $value);
+        // }
+
+        return $this;
+    }
+
+    /**
+     * @return null|int|float
+     */
+    public function getMaxLength()
+    {
+        return $this->raw[self::MAX_LENGTH] ?? null;
     }
 }

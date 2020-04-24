@@ -21,7 +21,7 @@ class Relation extends Integer
 
         $this
             ->setRelation($type, $params)
-            ->markUnsigned(true);
+            ->setUnsigned(true);
 
         if ($withIndex) {
             $this->addColumnDefinition('index');
