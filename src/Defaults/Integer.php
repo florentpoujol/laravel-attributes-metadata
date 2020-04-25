@@ -47,11 +47,14 @@ class Integer extends AttributeMetadata
         }
 
         $this
-            ->setColumnType($field)
-            ->markUnsigned($isUnsigned)
             ->setCast('int')
             ->setNovaFieldType('number')
             ->setNovaFieldDefinition('step', 1);
+
+        $definitions = $this->getColumnDefinitions()->setType($field);
+        if ($isUnsigned) {
+            $definitions->unsigned();
+        }
 
         $this->getValidationHandler()->setRule('int');
 

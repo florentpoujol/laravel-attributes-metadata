@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelModelMetadata;
 
+use FlorentPoujol\LaravelModelMetadata\ColumnDefinitions\ColumnDefinitionsHandler;
 use FlorentPoujol\LaravelModelMetadata\Validation\ValidationHandler;
-use FlorentPoujol\LaravelModelMetadata\Traits\HasColumnDefinitions;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Schema\ColumnDefinition;
 use Laravel\Nova\Fields\Field;
 
 class AttributeMetadata
@@ -32,6 +30,7 @@ class AttributeMetadata
     /** @var array<string, string|callable> Keys are Fqcn, values are Fqcn or factories */
     protected static $registeredHandlers = [
         ValidationHandler::class => ValidationHandler::class,
+        ColumnDefinitionsHandler::class => [ColumnDefinitionsHandler::class, 'make'],
     ];
 
     /**
@@ -78,10 +77,16 @@ class AttributeMetadata
         return $handler;
     }
 
-    // --------------------------------------------------
-    // Validation
+    /**
+     * @return \FlorentPoujol\LaravelModelMetadata\ColumnDefinitions\ColumnDefinitionsHandler
+     */
+    public function getColumnDefinitions(): ColumnDefinitionsHandler
+    {
+        /** @var ColumnDefinitionsHandler $handler */
+        $handler = $this->getHandler(ColumnDefinitionsHandler::class);
 
-
+        return $handler;
+    }
 
     // --------------------------------------------------
     // Nova Fields

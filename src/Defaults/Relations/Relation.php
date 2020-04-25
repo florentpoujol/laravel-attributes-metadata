@@ -19,12 +19,12 @@ class Relation extends Integer
             $params = [$params];
         }
 
-        $this
-            ->setRelation($type, $params)
-            ->markUnsigned(true);
+        $this->setRelation($type, $params);
+
+        $this->getColumnDefinitions()->unsigned();
 
         if ($withIndex) {
-            $this->addColumnDefinition('index');
+            $this->getColumnDefinitions()->index();
         }
     }
 }
