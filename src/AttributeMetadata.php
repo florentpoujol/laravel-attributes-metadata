@@ -4,47 +4,39 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelModelMetadata;
 
-use FlorentPoujol\LaravelModelMetadata\Providers\BaseProvider;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Schema\ColumnDefinition;
-use Laravel\Nova\Fields\Field;
+use Illuminate\Support\Collection;
 
-class AttributeMetadata
+class AttributeMetadata extends Collection
 {
-    /** @var array<string, mixed> */
-    protected static $makeDefinitions = [];
+    /** @var array<string, null|mixed> */
+    protected $items = [];
 
-    public static function make(array $definitions): string
+    public function add($item): self
     {
-        static::$makeDefinitions = $definitions;
-
-        return static::class;
-    }
-
-    public function setupFromMakeDefinitions(): void
-    {
-        foreach (static::$makeDefinitions as $methodName => $arguments) {
-            if (is_int($methodName)) {
-                $methodName = $arguments;
-                $arguments = [];
-            }
-
-            if ($arguments === null) {
-                $arguments = [];
-            } elseif (! is_array($arguments)) {
-                $arguments = [$arguments];
-            }
-
-            $this->$methodName(...$arguments);
+        if (! $this->has($item)) {
+            $this->items[$item] = null;
         }
+
+        return $this;
     }
 
-    public function __construct()
+    /**
+     * @param null|mixed $value
+     */
+    protected function unsetIfEmpty(string $name, $value): void
     {
-        $this->setupFromMakeDefinitions();
+        if (empty($value)) {
+            unset($this->items[$name]);
+
+            return;
+        }
+
+        $this->put($name, $value);
     }
 
-    /** @var null|string The name of the attribute. Usually set from ModelMetadata->getAttributeMetadata()`. */
+    // --------------------------------------------------
+
+   /** @var null|string The name of the attribute. Usually set from ModelMetadata->getAttributeMetadata()`. */
     protected $name;
 
     public function setName(string $name): self
@@ -60,123 +52,38 @@ class AttributeMetadata
     }
 
     // --------------------------------------------------
-    // Providers
-
-    /** @var array<string, \FlorentPoujol\LaravelModelMetadata\Providers\BaseProvider>  */
-    protected $providers = [];
-
-    /**
-     * @param \FlorentPoujol\LaravelModelMetadata\Providers\BaseProvider $provider
-     */
-    public function addProvider(BaseProvider $provider)
-    {
-        $this->providers[get_class($provider)] = $provider;
-    }
-
-    public function getProvider(string $providerFqcn): ?BaseProvider
-    {
-        return $this->providers[$providerFqcn] ?? null;
-    }
-
-    /**
-     * @return array<string, \FlorentPoujol\LaravelModelMetadata\Providers\BaseProvider>
-     */
-    public function getProviders(): array
-    {
-        return $this->providers;
-    }
-
-    /**
-     * @param mixed ...$args
-     *
-     * @return mixed
-     */
-    public function __call(string $method, ...$args)
-    {
-        $isGetter = strpos($method, 'get') === 0;
-
-        foreach ($this->getProviders() as $provider) {
-            if (method_exists($provider, $method)) {
-                $returnValue = $provider->$method(...$args);
-
-                if ($isGetter) {
-                    return $returnValue;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    // --------------------------------------------------
-    // Raw
-
-    /**
-     * @var array<string, mixed> Raw list of metadatas ans an associative array
-     */
-    protected $raw = [];
-
-    public function hasMeta(string $name): bool
-    {
-        return array_key_exists($name, $this->raw);
-    }
-
-    /**
-     * @return null|mixed $value
-     */
-    public function setMeta(string $name, $value)
-    {
-        return $this->raw[$name] = $value;
-    }
-
-    /**
-     * @return null|mixed
-     */
-    public function getMeta(string $name, $default = null)
-    {
-        return $this->raw[$name] ?? $default;
-    }
-
-    public function getMetas(): array
-    {
-        return $this->raw;
-    }
-
-    protected function unsetIfEmpty(string $name, $value): void
-    {
-        if (empty($value)) {
-            unset($this->raw[$name]);
-
-            return;
-        }
-
-        $this->raw[$name] = $value;
-    }
-
-    // --------------------------------------------------
     // cast and mutators
 
-    /** @var null|string|object */
-    protected $cast;
+    public const CAST = 'cast';
 
     /**
-     * @param null|string|object $cast
-     * @param string $value For casts that have values, like decimal or datetime
+     * @param null|string|\Illuminate\Contracts\Database\Eloquent\CastsAttributes $cast
+     * @param string|array $value For casts that have values, like decimal or datetime
      */
-    public function setCast($cast, string $value = null): self
+    public function setCast($cast, $value = null): self
     {
+        if ($cast === null) {
+            $this->unsetIfEmpty(self::CAST, null);
+
+            return $this;
+        }
+
         if ($value !== null) {
+            if (is_array($value)) {
+                $value = implode(',', $value);
+            }
+
             $cast .= ":$value";
         }
 
-        $this->cast = $cast;
+        $this->put(self::CAST, $cast);
 
         return $this;
     }
 
     public function hasCast(): bool
     {
-        return $this->cast !== null;
+        return $this->has(self::CAST);
     }
 
     /**
@@ -184,7 +91,7 @@ class AttributeMetadata
      */
     public function getCast()
     {
-        return $this->cast;
+        return $this->get(self::CAST);
     }
 
     /** @var null|string */
@@ -258,7 +165,7 @@ class AttributeMetadata
             return $this;
         }
 
-        $this->setMeta(self::RELATION, [
+        $this->put(self::RELATION, [
             'method' => $this->relationMethod,
             'parameters' => $this->relationParams
         ]);
@@ -308,28 +215,26 @@ class AttributeMetadata
     }
 
     // --------------------------------------------------
-    // Guarded
 
-    protected $isGuarded = false;
+    public const GUARDED = 'guarded';
 
     public function markGuarded(bool $isGuarded = true): self
     {
-        $this->isGuarded = $isGuarded;
+        $this->unsetIfEmpty(self::GUARDED, $isGuarded);
 
         return $this;
     }
 
     public function isGuarded(): bool
     {
-        return $this->isGuarded;
+        return $this->get(self::GUARDED, false);
     }
 
     // --------------------------------------------------
-    // Fillable
 
     public const FILLABLE = 'FILLABLE';
 
-    public function setFillable(bool $isFillable = true): self
+    public function markFillable(bool $isFillable = true): self
     {
         $this->unsetIfEmpty(self::FILLABLE, $isFillable);
 
@@ -338,15 +243,14 @@ class AttributeMetadata
 
     public function isFillable(): bool
     {
-        return $this->hasMeta(self::FILLABLE);
+        return $this->get(self::FILLABLE, false);
     }
 
     // --------------------------------------------------
-    // Date
 
     public const DATE = 'date';
 
-    public function setDate(bool $isDate = true): self
+    public function markDate(bool $isDate = true): self
     {
         $this->unsetIfEmpty(self::DATE, $isDate);
 
@@ -355,7 +259,7 @@ class AttributeMetadata
 
     public function isDate(): bool
     {
-        return $this->getMeta(self::DATE, false);
+        return $this->get(self::DATE, false);
     }
 
     // --------------------------------------------------
@@ -363,9 +267,9 @@ class AttributeMetadata
 
     public const NULLABLE = 'nullable';
 
-    public function setNullable(bool $isNullable = true, bool $affectDbColumn = false): self
+    public function markNullable(bool $isNullable = true, bool $affectDbColumn = false): self
     {
-        $this->isNullable = $isNullable;
+        $this->unsetIfEmpty(self::NULLABLE, $isNullable);
 
         // if ($isNullable) {
         //     $this
@@ -390,7 +294,7 @@ class AttributeMetadata
 
     public function isNullable(): bool
     {
-        return $this->raw[self::NULLABLE] ?? false;
+        return $this->get(self::NULLABLE, false);
     }
 
     // --------------------------------------------------
@@ -398,12 +302,9 @@ class AttributeMetadata
 
     public const REQUIRED = 'required';
 
-    /**
-     * Mark/unmark the validation rule and the Nova field as being 'required'
-     */
-    public function setRequired(bool $isRequired = true): self
+    public function markRequired(bool $isRequired = true): self
     {
-        $this->raw[self::REQUIRED] = $isRequired;
+        $this->unsetIfEmpty(self::REQUIRED, $isRequired);
 
         // if ($isRequired) {
         //     $this
@@ -420,7 +321,7 @@ class AttributeMetadata
 
     public function isRequired(): bool
     {
-        return $this->raw[self::REQUIRED] ?? false;
+        return $this->get(self::REQUIRED, false);
     }
 
     // --------------------------------------------------
@@ -428,12 +329,7 @@ class AttributeMetadata
 
     public const UNSIGNED = 'unsigned';
 
-    /**
-     * Mark/unmark
-     * - the field definition as being unsigned (only positive)
-     * - the validation rule as being 'numeric' and 'min:0'
-     */
-    public function setUnsigned(bool $isUnsigned = true): self
+    public function markUnsigned(bool $isUnsigned = true): self
     {
         $this->unsetIfEmpty(self::UNSIGNED, $isUnsigned);
 
@@ -453,11 +349,10 @@ class AttributeMetadata
 
     public function isUnsigned(): bool
     {
-        return $this->getMeta(self::UNSIGNED, false);
+        return $this->get(self::UNSIGNED, false);
     }
 
     // --------------------------------------------------
-    // Default value
 
     public const DEFAULT_VALUE = 'default_value';
 
@@ -466,7 +361,7 @@ class AttributeMetadata
      */
     public function setDefaultValue($value, bool $affectDbColumn = false): self
     {
-        $this->unsetIfEmpty(self::DEFAULT_VALUE, $value);
+        $this->put(self::DEFAULT_VALUE, $value);
 
         // if ($affectDbColumn) {
         //     $this->addColumnDefinition('default', $value);
@@ -482,61 +377,15 @@ class AttributeMetadata
      */
     public function getDefaultValue()
     {
-        return $this->getMeta(self::DEFAULT_VALUE);
+        return $this->get(self::DEFAULT_VALUE);
     }
 
     public function hasDefaultValue(): bool
     {
-        return $this->hasMeta(self::DEFAULT_VALUE);
+        return $this->has(self::DEFAULT_VALUE);
     }
 
     // --------------------------------------------------
-    // Primary key
-
-    protected $isPrimaryKey = false;
-    protected $primaryKeyType = 'int';
-    protected $isIncrementingPrimaryKey = true;
-
-    public function markPrimaryKey(bool $isPrimaryKey = true, string $keyType = 'int', bool $isIncrementing = true): self
-    {
-        $this->isPrimaryKey = $isPrimaryKey;
-        $this->primaryKeyType = $keyType;
-        $this->isIncrementingPrimaryKey = $this->primaryKeyType === 'int' ? $isIncrementing : false;
-
-        if ($this->isPrimaryKey) {
-            $this
-                ->addColumnDefinition('primary')
-                ->setNovaFieldType('id');
-        } else {
-            $this
-                ->removeColumnDefinition('primary')
-                ->removeColumnDefinition('autoIncrement');
-        }
-
-        if ($this->isIncrementingPrimaryKey) {
-            $this->addColumnDefinition('autoIncrement');
-        }
-
-        return $this;
-    }
-
-    public function isPrimaryKey(): bool
-    {
-        return $this->isPrimaryKey;
-    }
-
-    public function getPrimaryKeyType(): string
-    {
-        return $this->primaryKeyType;
-    }
-
-    public function isIncrementingPrimaryKey(): bool
-    {
-        return $this->isIncrementingPrimaryKey;
-    }
-
-    // --------------------------------------------------
-    // Min / Max / Step
 
     public const MIN_VALUE = 'min_value';
 
@@ -555,7 +404,7 @@ class AttributeMetadata
      */
     public function getMinValue()
     {
-        return $this->raw[self::MAX_VALUE] ?? null;
+        return $this->get(self::MIN_VALUE);
     }
 
     public const MAX_VALUE = 'max_value';
@@ -575,7 +424,7 @@ class AttributeMetadata
      */
     public function getMaxValue()
     {
-        return $this->raw[self::MAX_VALUE] ?? null;
+        return $this->get(self::MAX_VALUE);
     }
 
     public const STEP = 'step';
@@ -601,7 +450,7 @@ class AttributeMetadata
      */
     public function getStep()
     {
-        return $this->raw[self::STEP] ?? null;
+        return $this->metas[self::STEP] ?? null;
     }
 
     public const MIN_LENGTH = 'min_length';
@@ -620,7 +469,7 @@ class AttributeMetadata
      */
     public function getMinLength()
     {
-        return $this->raw[self::MAX_LENGTH] ?? null;
+        return $this->metas[self::MAX_LENGTH] ?? null;
     }
 
     public const MAX_LENGTH = 'max_length';
@@ -650,6 +499,6 @@ class AttributeMetadata
      */
     public function getMaxLength()
     {
-        return $this->raw[self::MAX_LENGTH] ?? null;
+        return $this->get(self::MAX_LENGTH);
     }
 }

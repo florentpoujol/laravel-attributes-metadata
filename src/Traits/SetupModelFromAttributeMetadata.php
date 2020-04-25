@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata;
+namespace FlorentPoujol\LaravelModelMetadata\Traits;
+
+use FlorentPoujol\LaravelModelMetadata\AttributeMetadata;
 
 /**
  * To be added on model classes that have relations defined in their metadata.
  *
  * @mixin \Illuminate\Database\Eloquent\Model
- * @mixin \FlorentPoujol\LaravelModelMetadata\HasAttributesMetadata
+ * @mixin \FlorentPoujol\LaravelModelMetadata\Traits\HasAttributesMetadata
  */
 trait SetupModelFromAttributeMetadata
 {
@@ -23,10 +25,77 @@ trait SetupModelFromAttributeMetadata
     protected static function compileDefaultValuesFromMetadata(): void
     {
         static::$defaultValues = array_merge(
-            static::getMetadata()->getDefaultValues(),
+            static::getAttributeMetadataCollection()->getDefaultValues(),
             // default values already set on the model takes precedence
             (new static())->attributes // property is protected but this is allowed since we are inside the model class
         );
+    }
+
+    /**
+     * @return array<string, mixed> The attributes that have a default values and their values
+     */
+    public function getDefaultValues(): array
+    {
+        return static::getAttributeMetadataCollection()
+            ->filter(function (AttributeMetadata $meta) {
+                return $meta->hasDefaultValue();
+            })
+            ->mapWithKeys(function (AttributeMetadata $meta, string $key) {
+                return [$key => $meta->getDefaultValue()];
+            })
+            ->toArray();
+    }
+
+    /**
+     * @return array<string> The fillable attributes
+     */
+    public function getFillable(): array
+    {
+        return static::getAttributeMetadataCollection()
+            ->filter(function (AttributeMetadata $meta) {
+                return $meta->isFillable();
+            })
+            ->keys()
+            ->toArray();
+    }
+
+    /**
+     * @return array<string> The guarded attributes
+     */
+    public function getGuarded(): array
+    {
+        return static::getAttributeMetadataCollection()
+            ->filter(function (AttributeMetadata $meta) {
+                return $meta->isGuarded();
+            })
+            ->keys()
+            ->toArray();
+    }
+
+    /**
+     * @return array<string> The hidden attributes
+     */
+    public function getHidden(): array
+    {
+        return static::getAttributeMetadataCollection()
+            ->filter(function (AttributeMetadata $meta) {
+                return $meta->isHidden();
+            })
+            ->keys()
+            ->toArray();
+    }
+
+    /**
+     * @return array<string> The dates attributes
+     */
+    public function getDates(): array
+    {
+        return static::getAttributeMetadataCollection()
+            ->filter(function (AttributeMetadata $meta) {
+                return $meta->isDate();
+            })
+            ->keys()
+            ->toArray();
     }
 
     // --------------------------------------------------
@@ -51,7 +120,7 @@ trait SetupModelFromAttributeMetadata
     {
         static::$staticFillable = array_values(array_unique(array_merge(
             (new static())->fillable,
-            static::getMetadata()->getFillable()
+            static::getAttributeMetadataCollection()->getFillable()
         )));
     }
 
@@ -77,7 +146,7 @@ trait SetupModelFromAttributeMetadata
     {
         static::$staticGuarded = array_values(array_unique(array_merge(
             (new static())->guarded,
-            static::getMetadata()->getGuarded()
+            static::getAttributeMetadataCollection()->getGuarded()
         )));
     }
 
@@ -103,7 +172,7 @@ trait SetupModelFromAttributeMetadata
     {
         static::$staticHidden = array_values(array_unique(array_merge(
             (new static())->hidden,
-            static::getMetadata()->getHidden()
+            static::getAttributeMetadataCollection()->getHidden()
         )));
     }
 
@@ -136,7 +205,7 @@ trait SetupModelFromAttributeMetadata
         static::$staticDates = array_values(array_unique(array_merge(
             $defaults,
             (new static())->dates,
-            static::getMetadata()->getDates()
+            static::getAttributeMetadataCollection()->getDates()
         )));
     }
 
@@ -176,7 +245,7 @@ trait SetupModelFromAttributeMetadata
     {
         static::$staticCasts = array_merge(
             (new static())->casts,
-            static::getMetadata()->getCasts()
+            static::getAttributeMetadataCollection()->getCasts()
         );
 
         static::$staticCastTypes = [];
@@ -241,7 +310,7 @@ trait SetupModelFromAttributeMetadata
         static::$staticKeyName = $model->primaryKey;
 
         /** @var \FlorentPoujol\LaravelModelMetadata\AttributeMetadata $primaryKeyMeta */
-        $primaryKeyMeta = static::getMetadata()->getPrimaryKeyMeta();
+        $primaryKeyMeta = static::getAttributeMetadataCollection()->getPrimaryKeyMeta();
         if ($primaryKeyMeta === null) {
             return;
         }

@@ -1,7 +1,8 @@
 <?php
 
-namespace FlorentPoujol\LaravelModelMetadata\Providers;
+namespace FlorentPoujol\LaravelModelMetadata\Handlers\Migrations;
 
+use FlorentPoujol\LaravelModelMetadata\Handlers\BaseProvider;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
 
@@ -109,5 +110,49 @@ class Migrations extends BaseProvider
     public function hasColumnInDB(): bool
     {
         return empty($this->columnDefinitions);
+    }
+
+    // --------------------------------------------------
+
+    protected $isPrimaryKey = false;
+    protected $primaryKeyType = 'int';
+    protected $isIncrementingPrimaryKey = true;
+
+    public function markPrimaryKey(bool $isPrimaryKey = true, string $keyType = 'int', bool $isIncrementing = true): self
+    {
+        $this->isPrimaryKey = $isPrimaryKey;
+        $this->primaryKeyType = $keyType;
+        $this->isIncrementingPrimaryKey = $this->primaryKeyType === 'int' ? $isIncrementing : false;
+
+        if ($this->isPrimaryKey) {
+            $this
+                ->addColumnDefinition('primary')
+                ->setNovaFieldType('id');
+        } else {
+            $this
+                ->removeColumnDefinition('primary')
+                ->removeColumnDefinition('autoIncrement');
+        }
+
+        if ($this->isIncrementingPrimaryKey) {
+            $this->addColumnDefinition('autoIncrement');
+        }
+
+        return $this;
+    }
+
+    public function isPrimaryKey(): bool
+    {
+        return $this->isPrimaryKey;
+    }
+
+    public function getPrimaryKeyType(): string
+    {
+        return $this->primaryKeyType;
+    }
+
+    public function isIncrementingPrimaryKey(): bool
+    {
+        return $this->isIncrementingPrimaryKey;
     }
 }
