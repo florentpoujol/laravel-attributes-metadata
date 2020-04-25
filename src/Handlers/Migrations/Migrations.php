@@ -2,11 +2,11 @@
 
 namespace FlorentPoujol\LaravelModelMetadata\Handlers\Migrations;
 
-use FlorentPoujol\LaravelModelMetadata\Handlers\BaseProvider;
+use FlorentPoujol\LaravelModelMetadata\Handlers\BaseHandler;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
 
-class Migrations extends BaseProvider
+class Migrations extends BaseHandler
 {
     /**
      * Keys are method names of the \Illuminate\Database\Schema\ColumnDefinition class

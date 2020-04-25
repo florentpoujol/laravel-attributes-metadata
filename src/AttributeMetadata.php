@@ -36,7 +36,7 @@ class AttributeMetadata extends Collection
 
     // --------------------------------------------------
 
-   /** @var null|string The name of the attribute. Usually set from ModelMetadata->getAttributeMetadata()`. */
+   /** @var null|string The name of the attribute. Usually set when from AttributeMetadataCollection->get()`. */
     protected $name;
 
     public function setName(string $name): self

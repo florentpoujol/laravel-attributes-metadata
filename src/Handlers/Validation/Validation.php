@@ -3,9 +3,9 @@
 namespace FlorentPoujol\LaravelModelMetadata\Handlers\Validation;
 
 use FlorentPoujol\LaravelModelMetadata\AttributeMetadata;
-use FlorentPoujol\LaravelModelMetadata\Handlers\BaseProvider;
+use FlorentPoujol\LaravelModelMetadata\Handlers\BaseHandler;
 
-class Validation extends BaseProvider // aka AttributeMetadataCollectionHandler
+class Validation extends BaseHandler // aka AttributeMetadataCollectionHandler
 {
     /**
      * Keys are rule name, or Fqcn when they are objects.

@@ -2,10 +2,10 @@
 
 namespace FlorentPoujol\LaravelModelMetadata\Handlers\Nova;
 
-use FlorentPoujol\LaravelModelMetadata\Handlers\BaseProvider;
+use FlorentPoujol\LaravelModelMetadata\Handlers\BaseHandler;
 use Laravel\Nova\Fields\Field;
 
-class Nova extends BaseProvider
+class Nova extends BaseHandler
 {
     /** @var array<string, null|\Laravel\Nova\Fields\Field> */
     protected $novaFields = [

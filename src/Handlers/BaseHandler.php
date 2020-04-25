@@ -4,7 +4,7 @@ namespace FlorentPoujol\LaravelModelMetadata\Handlers;
 
 use FlorentPoujol\LaravelModelMetadata\AttributeMetadataCollection;
 
-class BaseProvider
+class BaseHandler
 {
     /** @var \FlorentPoujol\LaravelModelMetadata\AttributeMetadataCollection */
     protected $attributeMetadataCollection;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelModelMetadata\Traits;
 
-use FlorentPoujol\LaravelModelMetadata\AttributeMetadata;
 use FlorentPoujol\LaravelModelMetadata\AttributeMetadataCollection;
 
 /**
@@ -30,10 +29,5 @@ trait HasAttributesMetadata
         );
 
         return static::$attributeMetadataCollection;
-    }
-
-    public static function getAttributeMetadata(string $name): ?AttributeMetadata
-    {
-        return static::getAttributeMetadataCollection()->get($name);
     }
 }

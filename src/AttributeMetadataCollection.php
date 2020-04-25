@@ -6,12 +6,9 @@ namespace FlorentPoujol\LaravelModelMetadata;
 
 use Illuminate\Support\Collection;
 
-/**
- * This class is essentially a proxy for the collection of the model's attribute metadata collection.
- */
 class AttributeMetadataCollection extends Collection
 {
-    /** @var array<string, \FlorentPoujol\LaravelModelMetadata\AttributeMetadata>  */
+    /** @var array<string, \FlorentPoujol\LaravelModelMetadata\AttributeMetadata> Keys are the attribute names */
     protected $items = [];
 
     /** @var array<string, string|callable|\FlorentPoujol\LaravelModelMetadata\AttributeMetadata> */
@@ -20,6 +17,9 @@ class AttributeMetadataCollection extends Collection
     /** @var string */
     protected $modelFqcn;
 
+    /**
+     * @param array<string, string|callable|\FlorentPoujol\LaravelModelMetadata\AttributeMetadata> $rawAttributeMetadata
+     */
     public function __construct(string $modelFqcn, array $rawAttributeMetadata)
     {
         parent::__construct();
@@ -37,6 +37,10 @@ class AttributeMetadataCollection extends Collection
     }
 
     /**
+     * Returns an AttributeMetadata instance if one exists for the attribute.
+     *
+     * @param null $default Has no effect.
+     *
      * @return null|\FlorentPoujol\LaravelModelMetadata\AttributeMetadata
      */
     public function get($name, $default = null): ?AttributeMetadata
@@ -46,7 +50,7 @@ class AttributeMetadataCollection extends Collection
         }
 
         if (! isset($this->rawAttrMetaArray[$name])) {
-            return $default;
+            return null;
         }
 
         $object = $this->rawAttrMetaArray[$name];
@@ -54,6 +58,8 @@ class AttributeMetadataCollection extends Collection
             $object = $object();
         } elseif (is_string($object)) { // Fqcn
             $object = new $object();
+        } elseif (is_array($object)) {
+            $object = new AttributeMetadata($object);
         }
 
         /** @var \FlorentPoujol\LaravelModelMetadata\AttributeMetadata $object */
