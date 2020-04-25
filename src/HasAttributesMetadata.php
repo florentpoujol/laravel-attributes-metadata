@@ -9,19 +9,19 @@ namespace FlorentPoujol\LaravelModelMetadata;
  */
 trait HasAttributesMetadata
 {
-    /** @var \FlorentPoujol\LaravelModelMetadata\ModelMetadata */
+    /** @var \FlorentPoujol\LaravelModelMetadata\AttributeConfigCollection */
     protected static $modelMetadata;
 
     /**
-     * @return \FlorentPoujol\LaravelModelMetadata\ModelMetadata
+     * @return \FlorentPoujol\LaravelModelMetadata\AttributeConfigCollection
      */
-    public static function getMetadata(): ModelMetadata
+    public static function getAttributeConfigCollection(): AttributeConfigCollection
     {
         if (static::$modelMetadata !== null) {
             return static::$modelMetadata;
         }
 
-        $modelMetadataFqcn = ModelMetadata::class;
+        $modelMetadataFqcn = AttributeConfigCollection::class;
         if (property_exists(static::class, 'modelMetadataFqcn')) {
             /** @noinspection PhpUndefinedFieldInspection */
             $modelMetadataFqcn = static::$modelMetadataFqcn;
@@ -37,54 +37,12 @@ trait HasAttributesMetadata
 
     public static function getAttributeMetadata(string $name): ?AttributeMetadata
     {
-        $modelMetadata = static::getMetadata();
+        $modelMetadata = static::getAttributeConfigCollection();
 
         if ($modelMetadata->hasAttribute($name)) {
             return $modelMetadata->getAttributeMetadata($name);
         }
 
         return null;
-    }
-
-    /**
-     * @param string|array<string> $attributes One or several attribute names to restrict the results to
-     *
-     * @return array<string, array<string|object>> Validation rules (as array) per attribute name
-     */
-    public static function getValidationRules($attributes = []): array
-    {
-        if (! is_array($attributes)) {
-            $attributes = [$attributes];
-        }
-
-        return static::getMetadata()->getValidationRules($attributes);
-    }
-
-    /**
-     * @param string|array<string> $attributes One or several attribute names to restrict the results to
-     *
-     * @return array<string, string> Validation messages per attribute name
-     */
-    public static function getValidationMessages($attributes = []): array
-    {
-        if (! is_array($attributes)) {
-            $attributes = [$attributes];
-        }
-
-        return static::getMetadata()->getValidationMessages($attributes);
-    }
-
-    /**
-     * @param string|array<string> $attributes One or several attribute names to restrict the results to
-     *
-     * @return array<\Laravel\Nova\Fields\Field>
-     */
-    public static function getNovaFields($attributes = []): array
-    {
-        if (! is_array($attributes)) {
-            $attributes = [$attributes];
-        }
-
-        return static::getMetadata()->getNovaFields($attributes);
     }
 }

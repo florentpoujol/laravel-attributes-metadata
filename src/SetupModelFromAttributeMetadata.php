@@ -23,7 +23,7 @@ trait SetupModelFromAttributeMetadata
     protected static function compileDefaultValuesFromMetadata(): void
     {
         static::$defaultValues = array_merge(
-            static::getMetadata()->getDefaultValues(),
+            static::getAttributeConfigCollection()->getDefaultValues(),
             // default values already set on the model takes precedence
             (new static())->attributes // property is protected but this is allowed since we are inside the model class
         );
@@ -51,7 +51,7 @@ trait SetupModelFromAttributeMetadata
     {
         static::$staticFillable = array_values(array_unique(array_merge(
             (new static())->fillable,
-            static::getMetadata()->getFillable()
+            static::getAttributeConfigCollection()->getFillable()
         )));
     }
 
@@ -77,7 +77,7 @@ trait SetupModelFromAttributeMetadata
     {
         static::$staticGuarded = array_values(array_unique(array_merge(
             (new static())->guarded,
-            static::getMetadata()->getGuarded()
+            static::getAttributeConfigCollection()->getGuarded()
         )));
     }
 
@@ -103,7 +103,7 @@ trait SetupModelFromAttributeMetadata
     {
         static::$staticHidden = array_values(array_unique(array_merge(
             (new static())->hidden,
-            static::getMetadata()->getHidden()
+            static::getAttributeConfigCollection()->getHidden()
         )));
     }
 
@@ -136,7 +136,7 @@ trait SetupModelFromAttributeMetadata
         static::$staticDates = array_values(array_unique(array_merge(
             $defaults,
             (new static())->dates,
-            static::getMetadata()->getDates()
+            static::getAttributeConfigCollection()->getDates()
         )));
     }
 
@@ -176,7 +176,7 @@ trait SetupModelFromAttributeMetadata
     {
         static::$staticCasts = array_merge(
             (new static())->casts,
-            static::getMetadata()->getCasts()
+            static::getAttributeConfigCollection()->getCasts()
         );
 
         static::$staticCastTypes = [];
@@ -241,7 +241,7 @@ trait SetupModelFromAttributeMetadata
         static::$staticKeyName = $model->primaryKey;
 
         /** @var \FlorentPoujol\LaravelModelMetadata\AttributeMetadata $primaryKeyMeta */
-        $primaryKeyMeta = static::getMetadata()->getPrimaryKeyMeta();
+        $primaryKeyMeta = static::getAttributeConfigCollection()->getPrimaryKeyMeta();
         if ($primaryKeyMeta === null) {
             return;
         }

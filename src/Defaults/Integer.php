@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelModelMetadata;
 
+use FlorentPoujol\LaravelModelMetadata\Validation\ValidationHandler;
+
 class Integer extends AttributeMetadata
 {
     /**
@@ -47,17 +49,20 @@ class Integer extends AttributeMetadata
         $this
             ->setColumnType($field)
             ->markUnsigned($isUnsigned)
-            ->setValidationRule('int')
             ->setCast('int')
             ->setNovaFieldType('number')
             ->setNovaFieldDefinition('step', 1);
 
+        $this->getValidationHandler()->setRule('int');
+
         if (isset($min)) {
             $this->setMinValue($min);
+            $this->getValidationHandler()->setRule('min', $min);
         }
 
         if (isset($max)) {
             $this->setMaxValue($max);
+            $this->getValidationHandler()->setRule('max', $max);
         }
     }
 

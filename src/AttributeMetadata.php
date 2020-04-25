@@ -4,45 +4,14 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelModelMetadata;
 
+use FlorentPoujol\LaravelModelMetadata\Validation\ValidationHandler;
+use FlorentPoujol\LaravelModelMetadata\Traits\HasColumnDefinitions;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
 use Laravel\Nova\Fields\Field;
 
 class AttributeMetadata
 {
-    /** @var array<string, mixed> */
-    protected static $makeDefinitions = [];
-
-    public static function make(array $definitions): string
-    {
-        static::$makeDefinitions = $definitions;
-
-        return static::class;
-    }
-
-    public function setupFromMakeDefinitions(): void
-    {
-        foreach (static::$makeDefinitions as $methodName => $arguments) {
-            if (is_int($methodName)) {
-                $methodName = $arguments;
-                $arguments = [];
-            }
-
-            if ($arguments === null) {
-                $arguments = [];
-            } elseif (! is_array($arguments)) {
-                $arguments = [$arguments];
-            }
-
-            $this->$methodName(...$arguments);
-        }
-    }
-
-    public function __construct()
-    {
-        $this->setupFromMakeDefinitions();
-    }
-
     /** @var null|string The name of the attribute. Usually set from ModelMetadata->getAttributeMetadata()`. */
     protected $name;
 
@@ -59,190 +28,60 @@ class AttributeMetadata
     }
 
     // --------------------------------------------------
-    // Database column definitions
+
+    /** @var array<string, string|callable> Keys are Fqcn, values are Fqcn or factories */
+    protected static $registeredHandlers = [
+        ValidationHandler::class => ValidationHandler::class,
+    ];
 
     /**
-     * Keys are method names of the \Illuminate\Database\Schema\ColumnDefinition class
-     * Values are argument(s), if any, of these methods
-     *
-     * There is one special column definition key : 'type'
-     * It itself has a value as array with 'method' and 'args' keys which match
-     * the method (and arguments) to be called first on the \Illuminate\Database\Schema\Blueprint class
-     *
-     * @var array<string, null|mixed|array<mixed>>
+     * @param string $fqcn
+     * @param null|callable $factory
      */
-    protected $columnDefinitions = [];
-
-    /**
-     * @param string $type Must match one of the public methods of the Blueprint class
-     * @param null|mixed $value one or several (as array) arguments for the type's method
-     */
-    public function setColumnType(string $type, $value = null)
+    public static function registerHandler(string $fqcn, callable $factory = null): void
     {
-        $this->columnDefinitions['type'] = ['method' => $type, 'args' => $value];
-
-        return $this;
+        static::$registeredHandlers[$fqcn] = $factory ?: $fqcn;
     }
 
-    public function getColumnType(): ?string
+    /** @var array<string, object> Handler instances per Fqcn */
+    protected $handlers = [];
+
+    public function getHandler(string $fqcn): ?object
     {
-        return $this->columnDefinitions['type']['method'] ?? null;
-    }
-
-    /**
-     * @param null|mixed $value
-     */
-    public function addColumnDefinition(string $key, $value = null): self
-    {
-        $this->columnDefinitions[$key] = $value;
-
-        return $this;
-    }
-
-    public function removeColumnDefinition(string $key): self
-    {
-        unset($this->columnDefinitions[$key]);
-
-        return $this;
-    }
-
-    /**
-     * @param \Illuminate\Database\Schema\Blueprint $table
-     *
-     * @return null|\Illuminate\Database\Schema\ColumnDefinition
-     */
-    public function addColumnToTable(Blueprint $table): ?ColumnDefinition
-    {
-        if (empty($this->columnDefinition)) {
-            return null;
+        $handler = $this->handlers[$fqcn] ?? null;
+        if ($handler === null || is_object($handler)) {
+            return $handler;
         }
 
-        $type = $this->columnDefinitions['type'];
-        $arguments = $type['args'] ?? [];
-        if (! is_array($arguments)) {
-            $arguments = [$arguments];
+        if (is_string($handler)) {
+            $handler = new $handler();
+        } elseif (is_callable($handler)) {
+            $handler = $handler();
         }
 
-        /** @var \Illuminate\Database\Schema\ColumnDefinition $columnDefinition */
-        $columnDefinition = $table->$type['method'](...$arguments);
+        $this->handlers[$fqcn] = $handler;
 
-        foreach ($this->columnDefinitions as $methodName => $arguments) {
-            if ($methodName === 'type') {
-                continue;
-            }
-
-            if (is_int($methodName)) {
-                $methodName = $arguments;
-                $arguments = [];
-            }
-
-            if ($arguments === null) {
-                $arguments = [];
-            } elseif (! is_array($arguments)) {
-                $arguments = [$arguments];
-            }
-
-            $columnDefinition->$methodName(...$arguments);
-        }
-
-        return $columnDefinition;
+        return $handler;
     }
+
+    // --------------------------------------------------
+    // Convenience methods for the default handlers
 
     /**
-     * @param \Illuminate\Database\Schema\Blueprint $table
-     *
-     * @return \Illuminate\Database\Schema\ColumnDefinition
+     * @return \FlorentPoujol\LaravelModelMetadata\Validation\ValidationHandler
      */
-    public function updateColumnToTable(Blueprint $table): ColumnDefinition
+    public function getValidationHandler(): ValidationHandler
     {
-        $columnDefinition = $this->addColumnToTable($table);
+        /** @var ValidationHandler $handler */
+        $handler = $this->getHandler(ValidationHandler::class);
 
-        return $columnDefinition->change();
-    }
-
-    public function hasColumnInDB(): bool
-    {
-        return empty($this->columnDefinitions);
+        return $handler;
     }
 
     // --------------------------------------------------
     // Validation
 
-    /**
-     * Keys are rule name, or Fqcn when they are objects.
-     * Values are full rules (with "arguments" after the semicolon, if any) or instances.
-     *
-     * @var array<string, string|object>
-     */
-    protected $validationRules = [];
 
-    /**
-     * @return array<string|object>
-     */
-    public function getValidationRules(): array
-    {
-        return array_values($this->validationRules);
-    }
-
-    /**
-     * @param array<string|object> $rules
-     */
-    public function setValidationRules(array $rules): self
-    {
-        $this->validationRules = [];
-
-        foreach ($rules as $rule) {
-            $this->setValidationRule($rule);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param string|object $rule
-     * @param null|mixed $value
-     */
-    public function setValidationRule($rule, $value = null): self
-    {
-        if ($value === null) {
-            $value = $rule;
-        }
-
-        if (is_string($rule) && strpos($rule, ':') !== false) {
-            // for the rules that takes "arguments" after a semicolon like 'exists', or 'in'
-            $rule = explode(':', $rule, 2)[0];
-        } elseif (is_object($rule)) {
-            $rule = get_class($rule);
-        }
-
-        $this->validationRules[$rule] = $value;
-
-        return $this;
-    }
-
-    /**
-     * @param string|object $rule
-     */
-    public function removeValidationRule($rule): self
-    {
-        unset($this->validationRules[$rule]);
-
-        return $this;
-    }
-
-    protected $validationMessage = '';
-
-    public function getValidationMessage(): string
-    {
-        return $this->validationMessage ?: '';
-    }
-
-    public function setValidationMessage(string $message): self
-    {
-        $this->validationMessage = $message;
-
-        return $this;
-    }
 
     // --------------------------------------------------
     // Nova Fields

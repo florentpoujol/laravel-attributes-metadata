@@ -9,13 +9,15 @@ use Illuminate\Support\Collection;
 /**
  * This class is essentially a proxy for the collection of the model's attribute metadata collection.
  */
-class ModelMetadata
+class AttributeConfigCollection extends Collection // attribute config collection
 {
     /** @var string */
     protected $modelFqcn;
 
     public function __construct(string $modelFqcn, array $rawAttributesMetadata)
     {
+        parent::__construct();
+
         $this->modelFqcn = $modelFqcn;
         $this->rawAttrsMetadata = $rawAttributesMetadata;
 
@@ -40,6 +42,21 @@ class ModelMetadata
     public function getAttributeNames(): array
     {
         return $this->attrNames;
+    }
+
+    public function filterByNames(array $attributes = [])
+    {
+        if (! is_array($attributes)) {
+            $attributes = [$attributes];
+        }
+
+        if (empty($attributes)) {
+            return $this;
+        }
+
+        return $this->filter(function (AttributeMetadata $metadata) use ($attributes) {
+            return in_array($metadata->getName(), $attributes);
+        });
     }
 
     /** @var \Illuminate\Support\Collection&array<string, \FlorentPoujol\LaravelModelMetadata\AttributeMetadata> */
@@ -177,50 +194,5 @@ class ModelMetadata
             ->first(function (AttributeMetadata $meta) {
                 return $meta->isPrimaryKey();
             });
-    }
-
-    /**
-     * @param null|array<string> $attributes The optional list of attribute names to restrict the results to
-     *
-     * @return array<string, array<string|object>> Validation rules per attribute name
-     */
-    public function getValidationRules(array $attributes = null): array
-    {
-         return $this
-            ->getAttrCollection($attributes)
-            ->mapWithKeys(function (AttributeMetadata $meta, string $name) {
-                return [$name => $meta->getValidationRules()];
-            })
-            ->toArray();
-    }
-
-    /**
-     * @param null|array<string> $attributes The optional list of attribute names to restrict the results to
-     *
-     * @return array<string, string> Validation messages per attribute name
-     */
-    public function getValidationMessages(array $attributes = null): array
-    {
-        return $this
-            ->getAttrCollection($attributes)
-            ->mapWithKeys(function (AttributeMetadata $meta, string $name) {
-                return [$name => $meta->getValidationMessage()];
-            })
-            ->toArray();
-    }
-
-    /**
-     * @param null|array<string> $attributes The optional list of attribute names to restrict the results to
-     *
-     * @return array<string, string>
-     */
-    public function getNovaFields(array $attributes = null): array
-    {
-        return $this
-            ->getAttrCollection($attributes)
-            ->flatMap(function (AttributeMetadata $meta) {
-                return $meta->getNovaFields();
-            })
-            ->toArray();
     }
 }
