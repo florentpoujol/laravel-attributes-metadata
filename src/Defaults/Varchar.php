@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata;
+namespace FlorentPoujol\LaravelAttributeMetadata\Defaults;
 
+use FlorentPoujol\LaravelAttributeMetadata\AttributeMetadata;
 use Illuminate\Database\Schema\Builder;
 
 class Varchar extends AttributeMetadata

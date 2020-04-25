@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata;
+namespace FlorentPoujol\LaravelAttributeMetadata;
 
 use Illuminate\Support\Collection;
 
 class AttributeMetadataCollection extends Collection
 {
-    /** @var array<string, \FlorentPoujol\LaravelModelMetadata\AttributeMetadata> Keys are the attribute names */
+    /** @var array<string, \FlorentPoujol\LaravelAttributeMetadata\AttributeMetadata> Keys are the attribute names */
     protected $items = [];
 
-    /** @var array<string, string|callable|\FlorentPoujol\LaravelModelMetadata\AttributeMetadata> */
+    /** @var array<string, string|callable|\FlorentPoujol\LaravelAttributeMetadata\AttributeMetadata> */
     protected $rawAttrMetaArray;
 
     /** @var string */
     protected $modelFqcn;
 
     /**
-     * @param array<string, string|callable|\FlorentPoujol\LaravelModelMetadata\AttributeMetadata> $rawAttributeMetadata
+     * @param array<string, string|callable|\FlorentPoujol\LaravelAttributeMetadata\AttributeMetadata> $rawAttributeMetadata
      */
     public function __construct(string $modelFqcn, array $rawAttributeMetadata)
     {
@@ -41,7 +41,7 @@ class AttributeMetadataCollection extends Collection
      *
      * @param null $default Has no effect.
      *
-     * @return null|\FlorentPoujol\LaravelModelMetadata\AttributeMetadata
+     * @return null|\FlorentPoujol\LaravelAttributeMetadata\AttributeMetadata
      */
     public function get($name, $default = null): ?AttributeMetadata
     {
@@ -62,7 +62,7 @@ class AttributeMetadataCollection extends Collection
             $object = new AttributeMetadata($object);
         }
 
-        /** @var \FlorentPoujol\LaravelModelMetadata\AttributeMetadata $object */
+        /** @var \FlorentPoujol\LaravelAttributeMetadata\AttributeMetadata $object */
         $object->setName($name);
 
         $this->put($name, $object);
@@ -71,7 +71,7 @@ class AttributeMetadataCollection extends Collection
     }
 
     /**
-     * @return array<string, \FlorentPoujol\LaravelModelMetadata\AttributeMetadata>
+     * @return array<string, \FlorentPoujol\LaravelAttributeMetadata\AttributeMetadata>
      */
     public function all(): array
     {

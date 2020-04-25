@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata;
+namespace FlorentPoujol\LaravelAttributeMetadata\Defaults;
+
+use FlorentPoujol\LaravelAttributeMetadata\AttributeMetadata;
 
 class Boolean extends AttributeMetadata
 {

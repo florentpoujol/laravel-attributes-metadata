@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata\Traits;
+namespace FlorentPoujol\LaravelAttributeMetadata\Traits;
 
-use FlorentPoujol\LaravelModelMetadata\AttributeMetadataCollection;
+use FlorentPoujol\LaravelAttributeMetadata\AttributeMetadataCollection;
 
 /**
  * @method static getRawAttributeMetadata(): array Shall be implemented typically in the model class itself
  */
 trait HasAttributesMetadata
 {
-    /** @var \FlorentPoujol\LaravelModelMetadata\AttributeMetadataCollection */
+    /** @var \FlorentPoujol\LaravelAttributeMetadata\AttributeMetadataCollection */
     protected static $attributeMetadataCollection;
 
     /**
-     * @return \FlorentPoujol\LaravelModelMetadata\AttributeMetadataCollection
+     * @return \FlorentPoujol\LaravelAttributeMetadata\AttributeMetadataCollection
      */
     public static function getAttributeMetadataCollection(): AttributeMetadataCollection
     {

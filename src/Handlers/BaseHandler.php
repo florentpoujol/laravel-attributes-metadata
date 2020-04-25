@@ -1,16 +1,16 @@
 <?php
 
-namespace FlorentPoujol\LaravelModelMetadata\Handlers;
+namespace FlorentPoujol\LaravelAttributeMetadata\Handlers;
 
-use FlorentPoujol\LaravelModelMetadata\AttributeMetadataCollection;
+use FlorentPoujol\LaravelAttributeMetadata\AttributeMetadataCollection;
 
 class BaseHandler
 {
-    /** @var \FlorentPoujol\LaravelModelMetadata\AttributeMetadataCollection */
+    /** @var \FlorentPoujol\LaravelAttributeMetadata\AttributeMetadataCollection */
     protected $attributeMetadataCollection;
 
     /**
-     * @param \FlorentPoujol\LaravelModelMetadata\AttributeMetadataCollection $attributeMetadataCollection
+     * @param \FlorentPoujol\LaravelAttributeMetadata\AttributeMetadataCollection $attributeMetadataCollection
      */
     public function __construct(AttributeMetadataCollection $attributeMetadataCollection)
     {

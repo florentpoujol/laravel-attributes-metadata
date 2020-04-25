@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata\Handlers\Relations;
+namespace FlorentPoujol\LaravelAttributeMetadata\Handlers\Relations;
 
 /**
  * To be added on model classes that have relations defined in their metadata.
  *
  * @mixin \Illuminate\Database\Eloquent\Model
- * @mixin \FlorentPoujol\LaravelModelMetadata\Traits\HasAttributesMetadata
+ * @mixin \FlorentPoujol\LaravelAttributeMetadata\Traits\HasAttributesMetadata
  */
 trait HandlesRelationsFromAttributeMetadata
 {

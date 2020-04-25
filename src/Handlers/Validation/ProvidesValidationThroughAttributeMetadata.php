@@ -1,16 +1,16 @@
 <?php
 
 
-namespace FlorentPoujol\LaravelModelMetadata\Handlers\Validation;
+namespace FlorentPoujol\LaravelAttributeMetadata\Handlers\Validation;
 
-use FlorentPoujol\LaravelModelMetadata\Handlers\Validation\Validation;
+use FlorentPoujol\LaravelAttributeMetadata\Handlers\Validation\Validation;
 
 /**
- * @mixin \FlorentPoujol\LaravelModelMetadata\Traits\HasAttributesMetadata
+ * @mixin \FlorentPoujol\LaravelAttributeMetadata\Traits\HasAttributesMetadata
  */
 class ProvidesValidationThroughAttributeMetadata
 {
-    /** @var \FlorentPoujol\LaravelModelMetadata\Handlers\Validation\Validation */
+    /** @var \FlorentPoujol\LaravelAttributeMetadata\Handlers\Validation\Validation */
     protected static $validationProvider;
 
     public static function getValidationProvider()

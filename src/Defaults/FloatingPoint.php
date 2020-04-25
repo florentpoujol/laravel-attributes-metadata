@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata;
+namespace FlorentPoujol\LaravelAttributeMetadata\Defaults;
 
-use Laravel\Nova\Fields\Number;
+use FlorentPoujol\LaravelAttributeMetadata\AttributeMetadata;
 
 class FloatingPoint extends AttributeMetadata
 {

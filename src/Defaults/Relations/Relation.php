@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata\Relations;
+namespace FlorentPoujol\LaravelAttributeMetadata\Defaults\Relations;
 
-use FlorentPoujol\LaravelModelMetadata\Integer;
+use FlorentPoujol\LaravelAttributeMetadata\Defaults\Integer;
 
 class Relation extends Integer
 {

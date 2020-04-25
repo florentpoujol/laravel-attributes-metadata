@@ -1,9 +1,9 @@
 <?php
 
-namespace FlorentPoujol\LaravelModelMetadata\Handlers\Validation;
+namespace FlorentPoujol\LaravelAttributeMetadata\Handlers\Validation;
 
-use FlorentPoujol\LaravelModelMetadata\AttributeMetadata;
-use FlorentPoujol\LaravelModelMetadata\Handlers\BaseHandler;
+use FlorentPoujol\LaravelAttributeMetadata\AttributeMetadata;
+use FlorentPoujol\LaravelAttributeMetadata\Handlers\BaseHandler;
 
 class Validation extends BaseHandler // aka AttributeMetadataCollectionHandler
 {

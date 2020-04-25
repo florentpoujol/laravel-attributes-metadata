@@ -1,8 +1,8 @@
 <?php
 
-namespace FlorentPoujol\LaravelModelMetadata\Handlers\Nova;
+namespace FlorentPoujol\LaravelAttributeMetadata\Handlers\Nova;
 
-use FlorentPoujol\LaravelModelMetadata\Handlers\BaseHandler;
+use FlorentPoujol\LaravelAttributeMetadata\Handlers\BaseHandler;
 use Laravel\Nova\Fields\Field;
 
 class Nova extends BaseHandler

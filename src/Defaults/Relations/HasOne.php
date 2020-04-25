@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata\Relations;
+namespace FlorentPoujol\LaravelAttributeMetadata\Defaults\Relations;
 
 class HasOne extends Relation
 {

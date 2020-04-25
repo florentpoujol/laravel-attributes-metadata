@@ -236,7 +236,7 @@ When the single argument is an array, you have to wrap the argument in an array.
 ### Getting the model metadata instance
 
 Beside the methods shown in the Usage section above, the `HasAttributeMetadata` trait provide the static `getModelMetadata()` method, 
-which returns and instance of `\FlorentPoujol\LaravelModelMetadata\ModelMetadata`.
+which returns and instance of `\FlorentPoujol\LaravelAttributeMetadata\ModelMetadata`.
 
 This class holds the instance of the model's metadata class and is essentially a proxy for them.  
 For instance the trait's `getValidationRules()` actually calls this same method on the instance of the models metadata, 

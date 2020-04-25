@@ -1,8 +1,8 @@
 <?php
 
-namespace FlorentPoujol\LaravelModelMetadata\Handlers\Migrations;
+namespace FlorentPoujol\LaravelAttributeMetadata\Handlers\Migrations;
 
-use FlorentPoujol\LaravelModelMetadata\Handlers\BaseHandler;
+use FlorentPoujol\LaravelAttributeMetadata\Handlers\BaseHandler;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
 
