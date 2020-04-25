@@ -5,74 +5,81 @@ namespace FlorentPoujol\LaravelAttributeMetadata\Handlers\Validation;
 use FlorentPoujol\LaravelAttributeMetadata\AttributeMetadata;
 use FlorentPoujol\LaravelAttributeMetadata\Handlers\BaseHandler;
 
-class Validation extends BaseHandler // aka AttributeMetadataCollectionHandler
+class Validation extends BaseHandler
 {
     /**
      * Keys are rule name, or Fqcn when they are objects.
      * Values are full rules (with "arguments" after the semicolon, if any) or instances.
      *
-     * @var array<string, string|object>
+     * @var array<string, array<string|object>>
      */
     protected $validationRules = [];
 
-    protected function buildRules(): void
+    /**
+     * @param array<string> $attributes
+     */
+    protected function buildRules(array $attributes = []): void
     {
-        $this->validationRules = [];
-
         $this->attributeMetadataCollection
-            ->each(function (AttributeMetadata $attrMeta) {
-                $rules = [];
-                $metas = $attrMeta->all();
+            ->each(function (AttributeMetadata $attrMeta) use ($attributes) {
+                $attrName = $attrMeta->getName();
+                if (! empty($attributes) && ! in_array($attrName, $attributes)) {
+                    return;
+                }
+
+                $metas = $attrMeta->all(); // all metadata of one attribute
                 foreach ($metas as $name => $value) {
                     switch ($name) {
                         case AttributeMetadata::UNSIGNED:
                             if ($value) {
-                                $rules['numeric'] = null;
-                                $rules['min'] = 0;
+                                $this
+                                    ->setRule($attrName, 'numeric')
+                                    ->setRule($attrName, 'min', 0);
                             }
                             break;
 
+                        case AttributeMetadata::NULLABLE:
+                            $this->setRule($attrName, 'nullable');
+                            break;
+                        case AttributeMetadata::REQUIRED:
+                            $this->setRule($attrName, 'required');
+                            break;
+
                         case AttributeMetadata::MIN_VALUE:
-                            $rules['numeric'] = null;
-                            $rules['min'] = $value;
+                            $this
+                                ->setRule($attrName, 'numeric')
+                                ->setRule($attrName, 'min', $value);
                             break;
                         case AttributeMetadata::MAX_VALUE:
-                            $rules['numeric'] = null;
-                            $rules['max'] = $value;
+                            $this
+                                ->setRule($attrName, 'numeric')
+                                ->setRule($attrName, 'max', $value);
                             break;
 
                         case AttributeMetadata::MIN_LENGTH:
-                            $rules['string'] = null;
-                            $rules['min'] = $value;
+                            $this
+                                ->setRule($attrName, 'string')
+                                ->setRule($attrName, 'min', $value);
                             break;
                         case AttributeMetadata::MAX_LENGTH:
-                            $rules['string'] = null;
-                            $rules['max'] = $value;
+                            $this
+                                ->setRule($attrName, 'string')
+                                ->setRule($attrName, 'max', $value);
+                            break;
+
+                        case 'boolean':
+                            $this->setRule($attrName, 'boolean');
                             break;
                     }
                 }
-
-                $this->validationRules[$attrMeta->getName()] = $rules;
             });
-    }
-
-    /**
-     * @return array<string|object>
-     */
-    public function getValidationRules(array $attributes = null): array
-    {
-        if (! empty($this->validationRules)) {
-            $this->buildRules();
-        }
-
-        return $this->validationRules;
     }
 
     /**
      * @param string|object $rule
      * @param null|mixed $value
      */
-    public function setValidationRule($rule, $value = null): self
+    public function setRule(string $attributeName, $rule, $value = null): self
     {
         if ($value === null) {
             $value = $rule;
@@ -85,7 +92,7 @@ class Validation extends BaseHandler // aka AttributeMetadataCollectionHandler
             $rule = get_class($rule);
         }
 
-        $this->validationRules[$rule] = $value;
+        $this->validationRules[$attributeName][$rule] = $value;
 
         return $this;
     }
@@ -93,10 +100,31 @@ class Validation extends BaseHandler // aka AttributeMetadataCollectionHandler
     /**
      * @param string|object $rule
      */
-    public function removeValidationRule($rule): self
+    public function removeValidationRule(string $attributeName, $rule): self
     {
-        unset($this->validationRules[$rule]);
+        unset($this->validationRules[$attributeName][$rule]);
 
         return $this;
+    }
+
+    /**
+     * @return array<string, array<string|object>> Validation rules per attribute name
+     */
+    public function getValidationRules(array $attributes = []): array
+    {
+        if (empty($attributes)) {
+            if (empty($this->validationRules)) {
+                $this->buildRules();
+            }
+
+            return $this->validationRules;
+        }
+
+        $diff = array_diff($attributes, array_keys($this->validationRules));
+        if (! empty($diff)) {
+            $this->buildRules($diff);
+        }
+
+        return array_values(array_intersect_key($this->validationRules, $attributes));
     }
 }

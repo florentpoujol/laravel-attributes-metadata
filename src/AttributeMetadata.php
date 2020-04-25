@@ -271,24 +271,6 @@ class AttributeMetadata extends Collection
     {
         $this->unsetIfEmpty(self::NULLABLE, $isNullable);
 
-        // if ($isNullable) {
-        //     $this
-        //         ->setValidationRule('nullable')
-        //         ->setNovaFieldDefinition('nullable');
-        //
-        //     if ($affectDbColumn) {
-        //         $this->addColumnDefinition('nullable');
-        //     }
-        // } else {
-        //     $this
-        //         ->removeValidationRule('nullable')
-        //         ->removeNovaFieldDefinition('nullable');
-        //
-        //     if ($affectDbColumn) {
-        //         $this->removeColumnDefinition('nullable');
-        //     }
-        // }
-
         return $this;
     }
 
@@ -306,16 +288,6 @@ class AttributeMetadata extends Collection
     {
         $this->unsetIfEmpty(self::REQUIRED, $isRequired);
 
-        // if ($isRequired) {
-        //     $this
-        //         ->setValidationRule('required')
-        //         ->setNovaFieldDefinition('required');
-        // } else {
-        //     $this
-        //         ->removeValidationRule('required')
-        //         ->removeNovaFieldDefinition('required');
-        // }
-
         return $this;
     }
 
@@ -332,17 +304,6 @@ class AttributeMetadata extends Collection
     public function markUnsigned(bool $isUnsigned = true): self
     {
         $this->unsetIfEmpty(self::UNSIGNED, $isUnsigned);
-
-        // if ($isUnsigned) {
-        //     $this
-        //         ->addColumnDefinition('unsigned')
-        //         ->setValidationRule('numeric', 0)
-        //         ->setMinValue(0);
-        // } else {
-        //     $this
-        //         ->removeColumnDefinition('unsigned')
-        //         ->setMinValue(null);
-        // }
 
         return $this;
     }
@@ -480,17 +441,6 @@ class AttributeMetadata extends Collection
     {
         $this->unsetIfEmpty(self::MAX_LENGTH, $value);
 
-        // if ($value !== null) {
-        //     $this->setValidationRule('max', $value);
-        // } else {
-        //     $this->removeValidationRule('max');
-        // }
-        //
-        // $columnType = $this->getColumnType();
-        // if ($columnType === 'string' || $columnType === 'char') {
-        //     $this->setColumnType($columnType, $value);
-        // }
-
         return $this;
     }
 
@@ -500,5 +450,21 @@ class AttributeMetadata extends Collection
     public function getMaxLength()
     {
         return $this->get(self::MAX_LENGTH);
+    }
+
+    // --------------------------------------------------
+
+    public const BOOLEAN = 'boolean';
+
+    public function markBoolean(bool $isBoolean = true): self
+    {
+        $this->unsetIfEmpty(self::BOOLEAN, $isBoolean);
+
+        return $this;
+    }
+
+    public function isBoolean(): bool
+    {
+        return $this->get(self::BOOLEAN, false);
     }
 }

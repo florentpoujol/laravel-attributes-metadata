@@ -46,57 +46,57 @@ trait SetupModelFromAttributeMetadata
             ->toArray();
     }
 
-    /**
-     * @return array<string> The fillable attributes
-     */
-    public function getFillable(): array
-    {
-        return static::getAttributeMetadataCollection()
-            ->filter(function (AttributeMetadata $meta) {
-                return $meta->isFillable();
-            })
-            ->keys()
-            ->toArray();
-    }
-
-    /**
-     * @return array<string> The guarded attributes
-     */
-    public function getGuarded(): array
-    {
-        return static::getAttributeMetadataCollection()
-            ->filter(function (AttributeMetadata $meta) {
-                return $meta->isGuarded();
-            })
-            ->keys()
-            ->toArray();
-    }
-
-    /**
-     * @return array<string> The hidden attributes
-     */
-    public function getHidden(): array
-    {
-        return static::getAttributeMetadataCollection()
-            ->filter(function (AttributeMetadata $meta) {
-                return $meta->isHidden();
-            })
-            ->keys()
-            ->toArray();
-    }
-
-    /**
-     * @return array<string> The dates attributes
-     */
-    public function getDates(): array
-    {
-        return static::getAttributeMetadataCollection()
-            ->filter(function (AttributeMetadata $meta) {
-                return $meta->isDate();
-            })
-            ->keys()
-            ->toArray();
-    }
+    // /**
+    //  * @return array<string> The fillable attributes
+    //  */
+    // public function getFillable(): array
+    // {
+    //     return static::getAttributeMetadataCollection()
+    //         ->filter(function (AttributeMetadata $meta) {
+    //             return $meta->isFillable();
+    //         })
+    //         ->keys()
+    //         ->toArray();
+    // }
+    //
+    // /**
+    //  * @return array<string> The guarded attributes
+    //  */
+    // public function getGuarded(): array
+    // {
+    //     return static::getAttributeMetadataCollection()
+    //         ->filter(function (AttributeMetadata $meta) {
+    //             return $meta->isGuarded();
+    //         })
+    //         ->keys()
+    //         ->toArray();
+    // }
+    //
+    // /**
+    //  * @return array<string> The hidden attributes
+    //  */
+    // public function getHidden(): array
+    // {
+    //     return static::getAttributeMetadataCollection()
+    //         ->filter(function (AttributeMetadata $meta) {
+    //             return $meta->isHidden();
+    //         })
+    //         ->keys()
+    //         ->toArray();
+    // }
+    //
+    // /**
+    //  * @return array<string> The dates attributes
+    //  */
+    // public function getDates(): array
+    // {
+    //     return static::getAttributeMetadataCollection()
+    //         ->filter(function (AttributeMetadata $meta) {
+    //             return $meta->isDate();
+    //         })
+    //         ->keys()
+    //         ->toArray();
+    // }
 
     // --------------------------------------------------
     // Fillable
