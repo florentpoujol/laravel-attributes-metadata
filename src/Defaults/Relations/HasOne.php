@@ -13,6 +13,6 @@ class HasOne extends Relation
     {
         parent::__construct('hasOne', $relationParams, $withIndex);
 
-        // TODO set the Nova field as belongsto on index and details
+        $this->getColumnDefinitions()->clear(); // the DB field in on other tables
     }
 }

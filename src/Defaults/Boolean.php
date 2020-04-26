@@ -10,12 +10,11 @@ class Boolean extends AttributeMetadata
 {
     public function __construct(bool $defaultValue = null)
     {
-        parent::__construct();
-
         $this
-            ->setColumnType('boolean')
-            ->setValidationRule('boolean')
             ->setNovaFieldType('boolean');
+
+        $this->getColumnDefinitions()->setType('boolean');
+        $this->getValidationHandler()->setRule('boolean');
 
         if ($defaultValue !== null) {
             $this->setDefaultValue($defaultValue);

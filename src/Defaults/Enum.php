@@ -11,18 +11,9 @@ class Enum extends AttributeMetadata
     /**
      * @param array<string> $allowedValues
      */
-    public function __construct(array $allowedValues = null)
+    public function __construct(array $allowedValues)
     {
-        parent::__construct();
-
-        if (!empty($allowedValues)) {
-            $this->setAllowedValues($allowedValues);
-        }
-
-        $this
-            ->setColumnType('enum', $this->allowedValues)
-            ->setValidationRule('in', $this->allowedValues)
-            ->setNovaFieldType('select');
+        $this->setAllowedValues($allowedValues);
     }
 
     /** @var array<string> */
@@ -35,7 +26,9 @@ class Enum extends AttributeMetadata
     {
         $this->allowedValues = $values;
 
-        $this->setValidationRule('in', $values);
+        $this->getColumnDefinitions()->setType('enum', $values);
+
+        $this->getValidationHandler()->setRule('in', $values);
 
         return $this;
     }

@@ -13,10 +13,7 @@ class Text extends AttributeMetadata
      */
     public function __construct(string $size = 'text')
     {
-        parent::__construct();
-
-        $this
-            ->setColumnType($size === 'text' ? 'text' : $size . 'Text')
-            ->setNovaFieldType('textarea');
+        $this->getColumnDefinitions()
+            ->setType($size === 'text' ? 'text' : $size . 'Text');
     }
 }

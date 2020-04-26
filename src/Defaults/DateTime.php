@@ -8,32 +8,20 @@ use FlorentPoujol\LaravelModelMetadata\AttributeMetadata;
 
 class DateTime extends AttributeMetadata
 {
-    /** @var string */
-    protected $type;
-
     /**
      * @param string $type 'timestamp', 'datetime' or 'date'
      */
-    public function __construct(string $type = 'timestamp', string $castFormat = null)
+    public function __construct(string $type = 'timestamp', int $precision = null)
     {
-        // parent::__construct();
-
         $this
             ->markDate(true)
-            ->setCast('datetime', $castFormat)
+            // ->setCast('datetime', $castFormat)
             ->setNovaFieldType($type);
 
-        $this->type = $type;
+        $params = $precision ? [$precision] : [];
         $this->getColumnDefinitions()
-            ->setType($type)
+            ->setType($type, ...$params)
             ->useCurrent();
-    }
-
-    public function setPrecision(int $precision): self
-    {
-        $this->getColumnDefinitions()->setType($this->type, $precision);
-
-        return $this;
     }
 
     /**

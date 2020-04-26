@@ -61,7 +61,7 @@ class ValidationHandler
     /**
      * @param string|object $rule
      */
-    public function removeValidationRule($rule): self
+    public function removeRule($rule): self
     {
         unset($this->rules[$rule]);
 

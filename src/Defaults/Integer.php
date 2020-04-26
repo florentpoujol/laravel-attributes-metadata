@@ -15,8 +15,6 @@ class Integer extends AttributeMetadata
      */
     public function __construct(int $size = 4, bool $isUnsigned = true)
     {
-        parent::__construct();
-
         // reference for boundaries: https://dev.mysql.com/doc/refman/8.0/en/integer-types.html
         switch ($size) {
             case 1:

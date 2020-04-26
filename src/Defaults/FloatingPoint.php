@@ -5,40 +5,40 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelModelMetadata\Defaults;
 
 use FlorentPoujol\LaravelModelMetadata\AttributeMetadata;
-use Laravel\Nova\Fields\Number;
 
 class FloatingPoint extends AttributeMetadata
 {
     /**
      * @param array<int> $precision An array of two integers, the first is the total number of digits and the second one the number of decimal places after the coma.
      */
-    public function __construct(string $type = 'float', array $precision = [8, 2], bool $isUnsigned = true)
+    public function __construct(string $type = 'float', array $precision = [8, 2], bool $isUnsigned = false)
     {
-        parent::__construct();
+        $columnDef = $this->getColumnDefinitions()->setType($type, $precision);
+        $validation = $this->getValidationHandler();
 
         switch ($type) {
             case 'float':
-                $this
-                    ->setColumnType('float', $precision)
-                    ->setValidationRule('float')
-                    ->markUnsigned($isUnsigned)
-                    ->setCast('float');
-                break;
             case 'double':
                 $this
-                    ->setColumnType('double', $precision)
-                    ->setValidationRule('float')
-                    ->markUnsigned($isUnsigned)
                     ->setCast('float');
+
+                $validation->setRule('float');
                 break;
             case 'decimal':
                 $this
-                    ->setColumnType('decimal', $precision)
                     ->setCast('decimal', $precision[1]);
                 break;
         }
 
+        if ($isUnsigned) {
+            $columnDef->unsigned();
+        }
+
         $boundaries = $this->getValueBoundariesFromPrecision($precision);
+        $validation
+            ->setRule('min', $boundaries['min'])
+            ->setRule('max', $boundaries['max']);
+
         $this
             ->setNovaFieldType('number')
             ->setMinValue($boundaries['min'])
@@ -57,7 +57,7 @@ class FloatingPoint extends AttributeMetadata
 
         return [
             'min' => $this->isUnsigned() ? 0 : - $max,
-            'max' => $max,
+            'max' => $max, // float/double max value do not change when unsigned
         ];
     }
 }

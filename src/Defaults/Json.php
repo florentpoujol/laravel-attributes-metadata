@@ -10,9 +10,10 @@ class Json extends Text
     {
         parent::__construct();
 
+        $this->getColumnDefinitions()->setType('json');
+        $this->getValidationHandler()->setRule($asArray ? 'array' : 'object');
+
         $this
-            ->setColumnType('json')
-            ->setValidationRule($asArray ? 'array' : 'object')
             ->setNovaFieldType('code')
             ->setNovaFieldDefinition('json');
     }
