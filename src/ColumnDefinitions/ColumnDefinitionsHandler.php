@@ -25,6 +25,13 @@ class ColumnDefinitionsHandler extends ColumnDefinition
         return $this;
     }
 
+    public function clear(): void
+    {
+        $this->type = null;
+        $this->typeParams = [];
+        $this->attributes = [];
+    }
+
     /** @var string */
     protected $type;
 
@@ -42,11 +49,20 @@ class ColumnDefinitionsHandler extends ColumnDefinition
         return $this;
     }
 
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
     /**
      * @param \Illuminate\Database\Schema\Blueprint $table
      */
     public function addToTable(Blueprint $table): void
     {
+        if ($this->type === null) {
+            return;
+        }
+
         $table->addColumn($this->type, $this->getAttributeName(), $this->toArray());
     }
 }
