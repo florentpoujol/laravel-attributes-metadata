@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata;
+namespace FlorentPoujol\LaravelModelMetadata\ModelProperties;
+
+use FlorentPoujol\LaravelModelMetadata\AttributeMetadata;
 
 /**
  * To be added on model classes that have relations defined in their metadata.
@@ -15,13 +17,24 @@ trait SetupModelFromAttributeMetadata
     /** @var null|array<string, mixed> */
     protected static $defaultValues;
 
-    public static function bootSetupModelPropertiesFromAttributeMetadata(): void
+    public static function bootSetupModelFromAttributeMetadata(): void
     {
         static::compileDefaultValuesFromMetadata();
     }
 
     protected static function compileDefaultValuesFromMetadata(): void
     {
+        static::getAttributeConfigCollection()
+            ->keep(function (AttributeMetadata $attr) {
+                return $attr->getModelPropertiesHandler()->hasDefaultValue();
+            })
+            ->mapWithKeys(function (AttributeMetadata $attr) {
+                return [
+                    $attr->getName(),
+                    $attr->getModelPropertiesHandler()->getDefaultValue()
+                ];
+            });
+
         static::$defaultValues = array_merge(
             static::getAttributeConfigCollection()->getDefaultValues(),
             // default values already set on the model takes precedence
@@ -30,7 +43,6 @@ trait SetupModelFromAttributeMetadata
     }
 
     // --------------------------------------------------
-    // Fillable
 
     /** @var null|array<string> */
     protected static $staticFillable;
@@ -38,7 +50,7 @@ trait SetupModelFromAttributeMetadata
     /**
      * @return array<string>
      */
-    public function getFillable(): array
+    public function getFillable(): array // from built-in GuardsAttributes trait
     {
         if (static::$staticFillable === null) {
             static::compileFillableFromMetadata();
@@ -56,7 +68,6 @@ trait SetupModelFromAttributeMetadata
     }
 
     // --------------------------------------------------
-    // Guarded
 
     /** @var null|array<string> */
     protected static $staticGuarded;
@@ -64,7 +75,7 @@ trait SetupModelFromAttributeMetadata
     /**
      * @return array<string>
      */
-    public function getGuarded(): array
+    public function getGuarded(): array // from built-in GuardsAttributes trait
     {
         if (static::$staticGuarded === null) {
             static::compileGuardedFromMetadata();
@@ -82,7 +93,6 @@ trait SetupModelFromAttributeMetadata
     }
 
     // --------------------------------------------------
-    // Hidden
 
     /** @var null|array<string> */
     protected static $staticHidden;
@@ -90,7 +100,7 @@ trait SetupModelFromAttributeMetadata
     /**
      * @return array<string>
      */
-    public function getHidden(): array
+    public function getHidden(): array // from built-in HidesAttributes trait
     {
         if (static::$staticHidden === null) {
             static::compileHiddenFromMetadata();
@@ -108,7 +118,6 @@ trait SetupModelFromAttributeMetadata
     }
 
     // --------------------------------------------------
-    // Hidden
 
     /** @var null|array<string> */
     protected static $staticDates;
@@ -116,7 +125,7 @@ trait SetupModelFromAttributeMetadata
     /**
      * @return array<string>
      */
-    public function getDates(): array
+    public function getDates(): array // from built-in Model class
     {
         if (static::$staticDates === null) {
             static::compileDatesFromMetadata();
@@ -141,7 +150,6 @@ trait SetupModelFromAttributeMetadata
     }
 
     // --------------------------------------------------
-    // Casts
 
     /** @var null|array<string, string> */
     protected static $staticCastTypes;
@@ -151,7 +159,7 @@ trait SetupModelFromAttributeMetadata
      *
      * @return string
      */
-    public function getCastType(string $attribute)
+    public function getCastType(string $attribute) // from built-in HasAttributes trait
     {
         if (static::$staticCasts === null) {
             static::compileCasts();
@@ -163,7 +171,7 @@ trait SetupModelFromAttributeMetadata
     /** @var null|array<string, string|object> */
     protected static $staticCasts;
 
-    public function getCasts(): array
+    public function getCasts(): array // from built-in HasAttributes trait
     {
         if (static::$staticCasts === null) {
             static::compileCasts();
@@ -195,7 +203,6 @@ trait SetupModelFromAttributeMetadata
     }
 
     // --------------------------------------------------
-    // Primary key
 
     /** @var null|bool */
     protected static $staticIncrementing;
@@ -233,7 +240,7 @@ trait SetupModelFromAttributeMetadata
         return static::$staticKeyName;
     }
 
-    protected function compilePrimaryKeyInfo(): void
+    protected static function compilePrimaryKeyInfo(): void
     {
         $model = new static();
         static::$staticIncrementing = $model->incrementing;

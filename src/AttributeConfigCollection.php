@@ -25,6 +25,18 @@ class AttributeConfigCollection extends Collection // attribute config collectio
         $this->attrCollection = new Collection();
     }
 
+    /**
+     * Keeps the items for which the callback returns true.
+     *
+     * @param callable $callback
+     *
+     * @return static
+     */
+    public function keep(callable $callback)
+    {
+        return $this->filter($callback);
+    }
+
     /** @var array<string, string|callable|\FlorentPoujol\LaravelModelMetadata\AttributeMetadata> */
     protected $rawAttrsMetadata;
 
