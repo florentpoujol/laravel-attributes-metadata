@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FlorentPoujol\LaravelModelMetadata\ColumnDefinitions;
 
 use FlorentPoujol\LaravelModelMetadata\AttributeMetadata;
