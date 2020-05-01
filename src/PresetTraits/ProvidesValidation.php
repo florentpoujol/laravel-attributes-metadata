@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelAttributePresets\Validation;
+namespace FlorentPoujol\LaravelAttributePresets\PresetTraits;
 
-class ValidationHandler
+trait ProvidesValidation
 {
     /**
      * Keys are rule name, or Fqcn when they are objects.
@@ -12,25 +12,25 @@ class ValidationHandler
      *
      * @var array<string, string|object>
      */
-    protected $rules = [];
+    protected $validationRules = [];
 
     /**
      * @return array<string|object>
      */
-    public function getRules(): array
+    public function getValidationRules(): array
     {
-        return array_values($this->rules);
+        return array_values($this->validationRules);
     }
 
     /**
-     * @param array<string|object> $rules
+     * @param array<string|object> $validationRules
      */
-    public function setRules(array $rules): self
+    public function setValidationRules(array $validationRules): self
     {
-        $this->rules = [];
+        $this->validationRules = [];
 
-        foreach ($rules as $rule) {
-            $this->setRule($rule);
+        foreach ($validationRules as $rule) {
+            $this->setValidationRule($rule);
         }
 
         return $this;
@@ -40,7 +40,7 @@ class ValidationHandler
      * @param string|object $rule
      * @param null|mixed $value
      */
-    public function setRule($rule, $value = null): self
+    public function setValidationRule($rule, $value = null): self
     {
         if ($value === null) {
             $value = $rule;
@@ -53,7 +53,7 @@ class ValidationHandler
             $rule = get_class($rule);
         }
 
-        $this->rules[$rule] = $value;
+        $this->validationRules[$rule] = $value;
 
         return $this;
     }
@@ -61,9 +61,13 @@ class ValidationHandler
     /**
      * @param string|object $rule
      */
-    public function removeRule($rule): self
+    public function removeValidationRule($rule): self
     {
-        unset($this->rules[$rule]);
+        if (is_object($rule)) {
+            $rule = get_class($rule);
+        }
+
+        unset($this->validationRules[$rule]);
 
         return $this;
     }

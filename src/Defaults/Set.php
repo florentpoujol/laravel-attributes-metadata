@@ -28,7 +28,7 @@ class Set extends BasePreset
 
         $this->getColumnDefinitions()->setType('set', $values);
 
-        $this->getValidationHandler()->setRule('in', $values);
+        $this->setValidationRule('in', $values);
 
         return $this;
     }

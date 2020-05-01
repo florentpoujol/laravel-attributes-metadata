@@ -14,7 +14,7 @@ class Boolean extends BasePreset
             ->setNovaFieldType('boolean');
 
         $this->getColumnDefinitions()->setType('boolean');
-        $this->getValidationHandler()->setRule('boolean');
+        $this->setValidationRule('boolean');
 
         if ($defaultValue !== null) {
             $this->setDefaultValue($defaultValue);

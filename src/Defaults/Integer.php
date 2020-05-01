@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
 use FlorentPoujol\LaravelAttributePresets\BasePreset;
-use FlorentPoujol\LaravelAttributePresets\Validation\ValidationHandler;
 
 class Integer extends BasePreset
 {
@@ -55,16 +54,16 @@ class Integer extends BasePreset
             $definitions->unsigned();
         }
 
-        $this->getValidationHandler()->setRule('int');
+        $this->setValidationRule('int');
 
         if (isset($min)) {
             $this->setMinValue($min);
-            $this->getValidationHandler()->setRule('min', $min);
+            $this->setValidationRule('min', $min);
         }
 
         if (isset($max)) {
             $this->setMaxValue($max);
-            $this->getValidationHandler()->setRule('max', $max);
+            $this->setValidationRule('max', $max);
         }
     }
 

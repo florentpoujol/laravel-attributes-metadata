@@ -28,7 +28,7 @@ class Enum extends BasePreset
 
         $this->getColumnDefinitions()->setType('enum', $values);
 
-        $this->getValidationHandler()->setRule('in', $values);
+        $this->setValidationRule('in', $values);
 
         return $this;
     }

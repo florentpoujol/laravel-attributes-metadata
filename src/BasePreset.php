@@ -6,7 +6,7 @@ namespace FlorentPoujol\LaravelAttributePresets;
 
 use FlorentPoujol\LaravelAttributePresets\ColumnDefinitions\ColumnDefinitionsHandler;
 use FlorentPoujol\LaravelAttributePresets\ModelProperties\ModelPropertiesHandler;
-use FlorentPoujol\LaravelAttributePresets\Validation\ValidationHandler;
+use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesValidation;
 use Laravel\Nova\Fields\Field;
 
 class BasePreset
@@ -30,7 +30,6 @@ class BasePreset
 
     /** @var array<string, string|callable> Keys are Fqcn, values are Fqcn or factories */
     protected static $registeredHandlers = [
-        ValidationHandler::class => ValidationHandler::class,
         ColumnDefinitionsHandler::class => [ColumnDefinitionsHandler::class, 'make'],
         ModelPropertiesHandler::class => ModelPropertiesHandler::class,
     ];
@@ -69,17 +68,6 @@ class BasePreset
     // Convenience methods for the default handlers
 
     /**
-     * @return \FlorentPoujol\LaravelAttributePresets\Validation\ValidationHandler
-     */
-    public function getValidationHandler(): ValidationHandler
-    {
-        /** @var ValidationHandler $handler */
-        $handler = $this->getHandler(ValidationHandler::class);
-
-        return $handler;
-    }
-
-    /**
      * @return \FlorentPoujol\LaravelAttributePresets\ColumnDefinitions\ColumnDefinitionsHandler
      */
     public function getColumnDefinitions(): ColumnDefinitionsHandler
@@ -100,6 +88,8 @@ class BasePreset
 
         return $handler;
     }
+
+    use ProvidesValidation;
 
     // --------------------------------------------------
     // Nova Fields

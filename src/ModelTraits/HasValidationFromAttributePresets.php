@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelAttributePresets\Validation;
+namespace FlorentPoujol\LaravelAttributePresets\ModelTraits;
 
 use FlorentPoujol\LaravelAttributePresets\BasePreset;
 use Illuminate\Validation\Factory;
 use Illuminate\Validation\Validator;
 
 /**
- * @mixin \FlorentPoujol\LaravelAttributePresets\HasAttributesMetadata
+ * @mixin \FlorentPoujol\LaravelAttributePresets\HasAttributePresets
  */
-trait HasValidationConfig
+trait HasValidationFromAttributePresets
 {
     /**
      * @param string|array<string> $attributes One or several attribute names to restrict the results to
@@ -20,14 +20,12 @@ trait HasValidationConfig
      */
     public static function getValidationRules($attributes = []): array
     {
-        return static::getAttributeConfigCollection()
+        return static::getAttributePresetCollection()
             ->filterByNames($attributes)
             ->mapWithKeys(function (BasePreset $attr) {
                 return [
                     $attr->getName(),
-                    $attr
-                        ->getValidationHandler()
-                        ->getRules()
+                    $attr->getValidationRules()
                 ];
             })
             ->toArray();

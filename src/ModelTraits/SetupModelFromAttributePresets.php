@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelAttributePresets\ModelProperties;
+namespace FlorentPoujol\LaravelAttributePresets\ModelTraits;
 
 use FlorentPoujol\LaravelAttributePresets\BasePreset;
 
@@ -10,21 +10,21 @@ use FlorentPoujol\LaravelAttributePresets\BasePreset;
  * To be added on model classes that have relations defined in their preset.
  *
  * @mixin \Illuminate\Database\Eloquent\Model
- * @mixin \FlorentPoujol\LaravelAttributePresets\HasAttributesMetadata
+ * @mixin \FlorentPoujol\LaravelAttributePresets\HasAttributePresets
  */
-trait SetupModelFromAttributeMetadata
+trait SetupModelFromAttributePresets
 {
     /** @var null|array<string, mixed> */
     protected static $defaultValues;
 
-    public static function bootSetupModelFromAttributeMetadata(): void
+    public static function bootSetupModelFromAttributePresets(): void
     {
         static::compileDefaultValuesFromMetadata();
     }
 
     protected static function compileDefaultValuesFromMetadata(): void
     {
-        static::getAttributeConfigCollection()
+        static::getAttributePresetCollection()
             ->keep(function (BasePreset $attr) {
                 return $attr->getModelPropertiesHandler()->hasDefaultValue();
             })
@@ -36,7 +36,7 @@ trait SetupModelFromAttributeMetadata
             });
 
         static::$defaultValues = array_merge(
-            static::getAttributeConfigCollection()->getDefaultValues(),
+            static::getAttributePresetCollection()->getDefaultValues(),
             // default values already set on the model takes precedence
             (new static())->attributes // property is protected but this is allowed since we are inside the model class
         );
@@ -63,7 +63,7 @@ trait SetupModelFromAttributeMetadata
     {
         static::$staticFillable = array_values(array_unique(array_merge(
             (new static())->fillable,
-            static::getAttributeConfigCollection()->getFillable()
+            static::getAttributePresetCollection()->getFillable()
         )));
     }
 
@@ -88,7 +88,7 @@ trait SetupModelFromAttributeMetadata
     {
         static::$staticGuarded = array_values(array_unique(array_merge(
             (new static())->guarded,
-            static::getAttributeConfigCollection()->getGuarded()
+            static::getAttributePresetCollection()->getGuarded()
         )));
     }
 
@@ -113,7 +113,7 @@ trait SetupModelFromAttributeMetadata
     {
         static::$staticHidden = array_values(array_unique(array_merge(
             (new static())->hidden,
-            static::getAttributeConfigCollection()->getHidden()
+            static::getAttributePresetCollection()->getHidden()
         )));
     }
 
@@ -145,7 +145,7 @@ trait SetupModelFromAttributeMetadata
         static::$staticDates = array_values(array_unique(array_merge(
             $defaults,
             (new static())->dates,
-            static::getAttributeConfigCollection()->getDates()
+            static::getAttributePresetCollection()->getDates()
         )));
     }
 
@@ -184,7 +184,7 @@ trait SetupModelFromAttributeMetadata
     {
         static::$staticCasts = array_merge(
             (new static())->casts,
-            static::getAttributeConfigCollection()->getCasts()
+            static::getAttributePresetCollection()->getCasts()
         );
 
         static::$staticCastTypes = [];
@@ -248,7 +248,7 @@ trait SetupModelFromAttributeMetadata
         static::$staticKeyName = $model->primaryKey;
 
         /** @var \FlorentPoujol\LaravelAttributePresets\BasePreset $primaryKeyMeta */
-        $primaryKeyMeta = static::getAttributeConfigCollection()->getPrimaryKeyMeta();
+        $primaryKeyMeta = static::getAttributePresetCollection()->getPrimaryKeyMeta();
         if ($primaryKeyMeta === null) {
             return;
         }

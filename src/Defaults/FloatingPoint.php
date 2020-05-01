@@ -14,7 +14,6 @@ class FloatingPoint extends BasePreset
     public function __construct(string $type = 'float', array $precision = [8, 2], bool $isUnsigned = false)
     {
         $columnDef = $this->getColumnDefinitions()->setType($type, $precision);
-        $validation = $this->getValidationHandler();
 
         switch ($type) {
             case 'float':
@@ -22,7 +21,7 @@ class FloatingPoint extends BasePreset
                 $this
                     ->setCast('float');
 
-                $validation->setRule('float');
+                $this->setValidationRule('float');
                 break;
             case 'decimal':
                 $this
@@ -35,9 +34,9 @@ class FloatingPoint extends BasePreset
         }
 
         $boundaries = $this->getValueBoundariesFromPrecision($precision);
-        $validation
-            ->setRule('min', $boundaries['min'])
-            ->setRule('max', $boundaries['max']);
+        $this
+            ->setValidationRule('min', $boundaries['min'])
+            ->setValidationRule('max', $boundaries['max']);
 
         $this
             ->setNovaFieldType('number')

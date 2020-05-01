@@ -11,7 +11,7 @@ class Json extends Text
         parent::__construct();
 
         $this->getColumnDefinitions()->setType('json');
-        $this->getValidationHandler()->setRule($asArray ? 'array' : 'object');
+        $this->setValidationRule($asArray ? 'array' : 'object');
 
         $this
             ->setNovaFieldType('code')

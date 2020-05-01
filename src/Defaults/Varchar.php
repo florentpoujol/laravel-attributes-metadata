@@ -17,7 +17,7 @@ class Varchar extends BasePreset
         $maxLength = $maxLength ?: Builder::$defaultStringLength;
 
         $this->getColumnDefinitions()->setType($type, $maxLength);
-        $this->getValidationHandler()->setRule('max', $maxLength);
+        $this->setValidationRule('max', $maxLength);
 
         $this
             ->setNovaFieldType('text')

@@ -18,6 +18,4 @@ trait HasAttributeName
     {
         return $this->attributeName;
     }
-
-
 }

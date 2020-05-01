@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelAttributePresets\ColumnDefinitions;
+namespace FlorentPoujol\LaravelAttributePresets\ModelTraits;
 
 use FlorentPoujol\LaravelAttributePresets\BasePreset;
 use Illuminate\Database\Schema\Blueprint;
 
 /**
- * @mixin \FlorentPoujol\LaravelAttributePresets\HasAttributesMetadata
+ * @mixin \FlorentPoujol\LaravelAttributePresets\HasAttributePresets
  */
-trait HasColumnDefinitionsConfig
+trait HasColumnDefinitionsFromAttributePresets
 {
     /**
      * @param string|array<string> $attributes One or several attribute names to restrict the results to
@@ -19,12 +19,12 @@ trait HasColumnDefinitionsConfig
      */
     public static function addColumnsToTable(Blueprint $table, array $attributes = []): void
     {
-        static::getAttributeConfigCollection()
+        static::getAttributePresetCollection()
             ->filterByNames($attributes)
-            ->each(function (BasePreset $attr) use ($table) {
-                    $attr
-                        ->getColumnDefinitions()
-                        ->addToTable($table);
+            ->each(function (BasePreset $preset) use ($table) {
+                $preset
+                    ->getColumnDefinitions()
+                    ->addToTable($table);
             });
     }
 }
