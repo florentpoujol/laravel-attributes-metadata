@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\ColumnDefinitions;
 
-use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\BasePreset;
 use Illuminate\Database\Schema\Blueprint;
 
 /**
@@ -21,7 +21,7 @@ trait HasColumnDefinitionsConfig
     {
         static::getAttributeConfigCollection()
             ->filterByNames($attributes)
-            ->each(function (AttributeMetadata $attr) use ($table) {
+            ->each(function (BasePreset $attr) use ($table) {
                     $attr
                         ->getColumnDefinitions()
                         ->addToTable($table);

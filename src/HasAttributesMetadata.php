@@ -29,13 +29,13 @@ trait HasAttributesMetadata
 
         static::$modelMetadata = new $modelMetadataFqcn(
             static::class, // model Fqcn
-            static::getAttributesMetadata() // attribute metadata definitions
+            static::getAttributesMetadata() // attribute preset definitions
         );
 
         return static::$modelMetadata;
     }
 
-    public static function getAttributeMetadata(string $name): ?AttributeMetadata
+    public static function getAttributeMetadata(string $name): ?BasePreset
     {
         $modelMetadata = static::getAttributeConfigCollection();
 

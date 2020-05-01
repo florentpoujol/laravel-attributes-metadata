@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\Validation;
 
-use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\BasePreset;
 use Illuminate\Validation\Factory;
 use Illuminate\Validation\Validator;
 
@@ -22,7 +22,7 @@ trait HasValidationConfig
     {
         return static::getAttributeConfigCollection()
             ->filterByNames($attributes)
-            ->mapWithKeys(function (AttributeMetadata $attr) {
+            ->mapWithKeys(function (BasePreset $attr) {
                 return [
                     $attr->getName(),
                     $attr

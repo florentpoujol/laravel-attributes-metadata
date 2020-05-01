@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
-use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\BasePreset;
 
-class FloatingPoint extends AttributeMetadata
+class FloatingPoint extends BasePreset
 {
     /**
      * @param array<int> $precision An array of two integers, the first is the total number of digits and the second one the number of decimal places after the coma.

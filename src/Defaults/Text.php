@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
-use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\BasePreset;
 
-class Text extends AttributeMetadata
+class Text extends BasePreset
 {
     /**
      * @param string $size 'text', 'medium' or 'long'

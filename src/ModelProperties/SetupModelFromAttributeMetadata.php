@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\ModelProperties;
 
-use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\BasePreset;
 
 /**
- * To be added on model classes that have relations defined in their metadata.
+ * To be added on model classes that have relations defined in their preset.
  *
  * @mixin \Illuminate\Database\Eloquent\Model
  * @mixin \FlorentPoujol\LaravelAttributePresets\HasAttributesMetadata
@@ -25,10 +25,10 @@ trait SetupModelFromAttributeMetadata
     protected static function compileDefaultValuesFromMetadata(): void
     {
         static::getAttributeConfigCollection()
-            ->keep(function (AttributeMetadata $attr) {
+            ->keep(function (BasePreset $attr) {
                 return $attr->getModelPropertiesHandler()->hasDefaultValue();
             })
-            ->mapWithKeys(function (AttributeMetadata $attr) {
+            ->mapWithKeys(function (BasePreset $attr) {
                 return [
                     $attr->getName(),
                     $attr->getModelPropertiesHandler()->getDefaultValue()
@@ -247,7 +247,7 @@ trait SetupModelFromAttributeMetadata
         static::$staticKeyType = $model->keyType;
         static::$staticKeyName = $model->primaryKey;
 
-        /** @var \FlorentPoujol\LaravelAttributePresets\AttributeMetadata $primaryKeyMeta */
+        /** @var \FlorentPoujol\LaravelAttributePresets\BasePreset $primaryKeyMeta */
         $primaryKeyMeta = static::getAttributeConfigCollection()->getPrimaryKeyMeta();
         if ($primaryKeyMeta === null) {
             return;

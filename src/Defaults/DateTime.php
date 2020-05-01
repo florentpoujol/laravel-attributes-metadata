@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
-use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\BasePreset;
 
-class DateTime extends AttributeMetadata
+class DateTime extends BasePreset
 {
     /**
      * @param string $type 'timestamp', 'datetime' or 'date'

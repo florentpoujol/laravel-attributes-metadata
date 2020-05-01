@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
-use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\BasePreset;
 use Illuminate\Database\Schema\Builder;
 
-class Varchar extends AttributeMetadata
+class Varchar extends BasePreset
 {
     /**
      * @param string $type 'string' or 'char'

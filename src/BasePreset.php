@@ -9,7 +9,7 @@ use FlorentPoujol\LaravelAttributePresets\ModelProperties\ModelPropertiesHandler
 use FlorentPoujol\LaravelAttributePresets\Validation\ValidationHandler;
 use Laravel\Nova\Fields\Field;
 
-class AttributeMetadata
+class BasePreset
 {
     /** @var null|string The name of the attribute. Usually set from ModelMetadata->getAttributeMetadata()`. */
     protected $name;

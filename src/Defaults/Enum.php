@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
-use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\BasePreset;
 
-class Enum extends AttributeMetadata
+class Enum extends BasePreset
 {
     /**
      * @param array<string> $allowedValues

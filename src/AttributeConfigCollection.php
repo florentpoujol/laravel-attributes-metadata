@@ -7,7 +7,7 @@ namespace FlorentPoujol\LaravelAttributePresets;
 use Illuminate\Support\Collection;
 
 /**
- * This class is essentially a proxy for the collection of the model's attribute metadata collection.
+ * This class is essentially a proxy for the collection of the model's attribute presets collection.
  */
 class AttributeConfigCollection extends Collection // attribute config collection
 {
@@ -37,7 +37,7 @@ class AttributeConfigCollection extends Collection // attribute config collectio
         return $this->filter($callback);
     }
 
-    /** @var array<string, string|callable|\FlorentPoujol\LaravelAttributePresets\AttributeMetadata> */
+    /** @var array<string, string|callable|\FlorentPoujol\LaravelAttributePresets\BasePreset> */
     protected $rawAttrsMetadata;
 
     public function hasAttribute(string $name): bool
@@ -45,7 +45,7 @@ class AttributeConfigCollection extends Collection // attribute config collectio
         return isset($this->rawAttrsMetadata[$name]);
     }
 
-    /** @var string[] List of the model's attributes (that have metadata) */
+    /** @var string[] List of the model's attributes (that have presets) */
     protected $attrNames;
 
     /**
@@ -66,20 +66,20 @@ class AttributeConfigCollection extends Collection // attribute config collectio
             return $this;
         }
 
-        return $this->filter(function (AttributeMetadata $metadata) use ($attributes) {
-            return in_array($metadata->getName(), $attributes);
+        return $this->filter(function (BasePreset $preset) use ($attributes) {
+            return in_array($preset->getName(), $attributes);
         });
     }
 
-    /** @var \Illuminate\Support\Collection&array<string, \FlorentPoujol\LaravelAttributePresets\AttributeMetadata> */
+    /** @var \Illuminate\Support\Collection&array<string, \FlorentPoujol\LaravelAttributePresets\BasePreset> */
     protected $attrCollection;
 
     /**
-     * @return \FlorentPoujol\LaravelAttributePresets\AttributeMetadata
+     * @return \FlorentPoujol\LaravelAttributePresets\BasePreset
      *
-     * @throws \LogicException When the attribute has no metadata
+     * @throws \LogicException When the attribute has no preset
      */
-    public function getAttributeMetadata(string $name): AttributeMetadata
+    public function getAttributeMetadata(string $name): BasePreset
     {
         if ($this->attrCollection->has($name)) {
             return $this->attrCollection->get($name);
@@ -87,7 +87,7 @@ class AttributeConfigCollection extends Collection // attribute config collectio
 
         if (! in_array($name, $this->attrNames)) {
             throw new \LogicException(
-                "Attribute '{$this->modelFqcn}->$name' doesn't have metadata"
+                "Attribute '{$this->modelFqcn}->$name' doesn't have preset"
             );
         }
 
@@ -99,7 +99,7 @@ class AttributeConfigCollection extends Collection // attribute config collectio
             $object = new $object();
         }
 
-        /** @var \FlorentPoujol\LaravelAttributePresets\AttributeMetadata $object */
+        /** @var \FlorentPoujol\LaravelAttributePresets\BasePreset $object */
         $object->setName($name);
         $this->attrCollection->put($name, $object);
 
@@ -107,11 +107,11 @@ class AttributeConfigCollection extends Collection // attribute config collectio
     }
 
     /**
-     * Return all or a subset of the attributes metadata collection
+     * Return all or a subset of the attributes preset collection
      *
      * @param null|array<string> $names
      *
-     * @return \Illuminate\Support\Collection&array<string, \FlorentPoujol\LaravelAttributePresets\AttributeMetadata>
+     * @return \Illuminate\Support\Collection&array<string, \FlorentPoujol\LaravelAttributePresets\BasePreset>
      */
     public function getAttrCollection(array $names = null)
     {
@@ -121,7 +121,7 @@ class AttributeConfigCollection extends Collection // attribute config collectio
         foreach ($names as $name) {
             $collection->put($name, $this->getAttributeMetadata($name));
             // done like that instead of using the collection's only() method
-            // so that metadata classes are created if they don't exists yet
+            // so that preset classes are created if they don't exists yet
         }
 
         return $collection;
@@ -134,10 +134,10 @@ class AttributeConfigCollection extends Collection // attribute config collectio
     {
         return $this
             ->getAttrCollection()
-            ->filter(function (AttributeMetadata $meta) {
+            ->filter(function (BasePreset $meta) {
                 return $meta->hasDefaultValue();
             })
-            ->mapWithKeys(function (AttributeMetadata $meta, string $key) {
+            ->mapWithKeys(function (BasePreset $meta, string $key) {
                 return [$key => $meta->getDefaultValue()];
             })
             ->toArray();
@@ -150,7 +150,7 @@ class AttributeConfigCollection extends Collection // attribute config collectio
     {
         return $this
             ->getAttrCollection()
-            ->filter(function (AttributeMetadata $meta) {
+            ->filter(function (BasePreset $meta) {
                 return $meta->isFillable();
             })
             ->keys()
@@ -164,7 +164,7 @@ class AttributeConfigCollection extends Collection // attribute config collectio
     {
         return $this
             ->getAttrCollection()
-            ->filter(function (AttributeMetadata $meta) {
+            ->filter(function (BasePreset $meta) {
                 return $meta->isGuarded();
             })
             ->keys()
@@ -178,7 +178,7 @@ class AttributeConfigCollection extends Collection // attribute config collectio
     {
         return $this
             ->getAttrCollection()
-            ->filter(function (AttributeMetadata $meta) {
+            ->filter(function (BasePreset $meta) {
                 return $meta->isHidden();
             })
             ->keys()
@@ -192,18 +192,18 @@ class AttributeConfigCollection extends Collection // attribute config collectio
     {
         return $this
             ->getAttrCollection()
-            ->filter(function (AttributeMetadata $meta) {
+            ->filter(function (BasePreset $meta) {
                 return $meta->isDate();
             })
             ->keys()
             ->toArray();
     }
 
-    public function getPrimaryKeyMeta(): ?AttributeMetadata
+    public function getPrimaryKeyMeta(): ?BasePreset
     {
         return $this
             ->getAttrCollection()
-            ->first(function (AttributeMetadata $meta) {
+            ->first(function (BasePreset $meta) {
                 return $meta->isPrimaryKey();
             });
     }

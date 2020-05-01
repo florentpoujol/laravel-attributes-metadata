@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\ColumnDefinitions;
 
-use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\BasePreset;
 use FlorentPoujol\LaravelAttributePresets\HasAttributeName;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
@@ -13,7 +13,7 @@ class ColumnDefinitionsHandler extends ColumnDefinition
 {
     use HasAttributeName;
 
-    public static function make(AttributeMetadata $attr)
+    public static function make(BasePreset $attr)
     {
         return (new static)->setAttributeName($attr->getName());
     }

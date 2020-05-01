@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
-use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\BasePreset;
 use FlorentPoujol\LaravelAttributePresets\Validation\ValidationHandler;
 
-class Integer extends AttributeMetadata
+class Integer extends BasePreset
 {
     /**
      * @param int $size The size in byte the field should take (1, 2, 3, 4 or 8)
