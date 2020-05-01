@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata\ModelProperties;
+namespace FlorentPoujol\LaravelAttributePresets\ModelProperties;
 
-use FlorentPoujol\LaravelModelMetadata\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
 
 /**
  * To be added on model classes that have relations defined in their metadata.
  *
  * @mixin \Illuminate\Database\Eloquent\Model
- * @mixin \FlorentPoujol\LaravelModelMetadata\HasAttributesMetadata
+ * @mixin \FlorentPoujol\LaravelAttributePresets\HasAttributesMetadata
  */
 trait SetupModelFromAttributeMetadata
 {
@@ -247,7 +247,7 @@ trait SetupModelFromAttributeMetadata
         static::$staticKeyType = $model->keyType;
         static::$staticKeyName = $model->primaryKey;
 
-        /** @var \FlorentPoujol\LaravelModelMetadata\AttributeMetadata $primaryKeyMeta */
+        /** @var \FlorentPoujol\LaravelAttributePresets\AttributeMetadata $primaryKeyMeta */
         $primaryKeyMeta = static::getAttributeConfigCollection()->getPrimaryKeyMeta();
         if ($primaryKeyMeta === null) {
             return;

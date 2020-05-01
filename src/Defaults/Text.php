@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata\Defaults;
+namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
-use FlorentPoujol\LaravelModelMetadata\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
 
 class Text extends AttributeMetadata
 {

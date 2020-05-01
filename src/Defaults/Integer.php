@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata\Defaults;
+namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
-use FlorentPoujol\LaravelModelMetadata\AttributeMetadata;
-use FlorentPoujol\LaravelModelMetadata\Validation\ValidationHandler;
+use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\Validation\ValidationHandler;
 
 class Integer extends AttributeMetadata
 {

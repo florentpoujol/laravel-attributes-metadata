@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata;
+namespace FlorentPoujol\LaravelAttributePresets;
 
 /**
  * To be added on model classes that have relations defined in their metadata.
  *
  * @mixin \Illuminate\Database\Eloquent\Model
- * @mixin \FlorentPoujol\LaravelModelMetadata\HasAttributesMetadata
+ * @mixin \FlorentPoujol\LaravelAttributePresets\HasAttributesMetadata
  */
 trait HandlesRelationsFromAttributeMetadata
 {

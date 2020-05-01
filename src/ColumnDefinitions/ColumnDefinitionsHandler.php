@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata\ColumnDefinitions;
+namespace FlorentPoujol\LaravelAttributePresets\ColumnDefinitions;
 
-use FlorentPoujol\LaravelModelMetadata\AttributeMetadata;
-use FlorentPoujol\LaravelModelMetadata\HasAttributeName;
+use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\HasAttributeName;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
 

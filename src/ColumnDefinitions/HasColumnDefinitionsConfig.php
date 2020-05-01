@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata\ColumnDefinitions;
+namespace FlorentPoujol\LaravelAttributePresets\ColumnDefinitions;
 
-use FlorentPoujol\LaravelModelMetadata\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
 use Illuminate\Database\Schema\Blueprint;
 
 /**
- * @mixin \FlorentPoujol\LaravelModelMetadata\HasAttributesMetadata
+ * @mixin \FlorentPoujol\LaravelAttributePresets\HasAttributesMetadata
  */
 trait HasColumnDefinitionsConfig
 {

@@ -1,5 +1,5 @@
 {
-  "name": "florentpoujol/laravel-model-metadata",
+  "name": "florentpoujol/laravel-attribute-presets",
   "type": "library",
   "description": "",
   "keywords": [
@@ -18,7 +18,7 @@
   "require-dev": {},
   "autoload": {
     "psr-4": {
-      "FlorentPoujol\\LaravelModelMetadata\\": "src/"
+      "FlorentPoujol\\LaravelAttributePresets\\": "src/"
     }
   },
   "autoload-dev": {},

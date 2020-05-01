@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata;
+namespace FlorentPoujol\LaravelAttributePresets;
 
 /**
  * @method static getAttributesMetadata(): array Shall be implemented typically in the model class itself
  */
 trait HasAttributesMetadata
 {
-    /** @var \FlorentPoujol\LaravelModelMetadata\AttributeConfigCollection */
+    /** @var \FlorentPoujol\LaravelAttributePresets\AttributeConfigCollection */
     protected static $modelMetadata;
 
     /**
-     * @return \FlorentPoujol\LaravelModelMetadata\AttributeConfigCollection
+     * @return \FlorentPoujol\LaravelAttributePresets\AttributeConfigCollection
      */
     public static function getAttributeConfigCollection(): AttributeConfigCollection
     {

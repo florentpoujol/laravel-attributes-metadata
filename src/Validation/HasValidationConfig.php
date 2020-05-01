@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata\Validation;
+namespace FlorentPoujol\LaravelAttributePresets\Validation;
 
-use FlorentPoujol\LaravelModelMetadata\AttributeMetadata;
+use FlorentPoujol\LaravelAttributePresets\AttributeMetadata;
 use Illuminate\Validation\Factory;
 use Illuminate\Validation\Validator;
 
 /**
- * @mixin \FlorentPoujol\LaravelModelMetadata\HasAttributesMetadata
+ * @mixin \FlorentPoujol\LaravelAttributePresets\HasAttributesMetadata
  */
 trait HasValidationConfig
 {

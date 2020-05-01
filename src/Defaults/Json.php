@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata\Defaults;
+namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
 class Json extends Text
 {

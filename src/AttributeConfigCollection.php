@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata;
+namespace FlorentPoujol\LaravelAttributePresets;
 
 use Illuminate\Support\Collection;
 
@@ -37,7 +37,7 @@ class AttributeConfigCollection extends Collection // attribute config collectio
         return $this->filter($callback);
     }
 
-    /** @var array<string, string|callable|\FlorentPoujol\LaravelModelMetadata\AttributeMetadata> */
+    /** @var array<string, string|callable|\FlorentPoujol\LaravelAttributePresets\AttributeMetadata> */
     protected $rawAttrsMetadata;
 
     public function hasAttribute(string $name): bool
@@ -71,11 +71,11 @@ class AttributeConfigCollection extends Collection // attribute config collectio
         });
     }
 
-    /** @var \Illuminate\Support\Collection&array<string, \FlorentPoujol\LaravelModelMetadata\AttributeMetadata> */
+    /** @var \Illuminate\Support\Collection&array<string, \FlorentPoujol\LaravelAttributePresets\AttributeMetadata> */
     protected $attrCollection;
 
     /**
-     * @return \FlorentPoujol\LaravelModelMetadata\AttributeMetadata
+     * @return \FlorentPoujol\LaravelAttributePresets\AttributeMetadata
      *
      * @throws \LogicException When the attribute has no metadata
      */
@@ -99,7 +99,7 @@ class AttributeConfigCollection extends Collection // attribute config collectio
             $object = new $object();
         }
 
-        /** @var \FlorentPoujol\LaravelModelMetadata\AttributeMetadata $object */
+        /** @var \FlorentPoujol\LaravelAttributePresets\AttributeMetadata $object */
         $object->setName($name);
         $this->attrCollection->put($name, $object);
 
@@ -111,7 +111,7 @@ class AttributeConfigCollection extends Collection // attribute config collectio
      *
      * @param null|array<string> $names
      *
-     * @return \Illuminate\Support\Collection&array<string, \FlorentPoujol\LaravelModelMetadata\AttributeMetadata>
+     * @return \Illuminate\Support\Collection&array<string, \FlorentPoujol\LaravelAttributePresets\AttributeMetadata>
      */
     public function getAttrCollection(array $names = null)
     {

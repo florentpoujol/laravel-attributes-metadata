@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata;
+namespace FlorentPoujol\LaravelAttributePresets;
 
-use FlorentPoujol\LaravelModelMetadata\ColumnDefinitions\ColumnDefinitionsHandler;
-use FlorentPoujol\LaravelModelMetadata\ModelProperties\ModelPropertiesHandler;
-use FlorentPoujol\LaravelModelMetadata\Validation\ValidationHandler;
+use FlorentPoujol\LaravelAttributePresets\ColumnDefinitions\ColumnDefinitionsHandler;
+use FlorentPoujol\LaravelAttributePresets\ModelProperties\ModelPropertiesHandler;
+use FlorentPoujol\LaravelAttributePresets\Validation\ValidationHandler;
 use Laravel\Nova\Fields\Field;
 
 class AttributeMetadata
@@ -69,7 +69,7 @@ class AttributeMetadata
     // Convenience methods for the default handlers
 
     /**
-     * @return \FlorentPoujol\LaravelModelMetadata\Validation\ValidationHandler
+     * @return \FlorentPoujol\LaravelAttributePresets\Validation\ValidationHandler
      */
     public function getValidationHandler(): ValidationHandler
     {
@@ -80,7 +80,7 @@ class AttributeMetadata
     }
 
     /**
-     * @return \FlorentPoujol\LaravelModelMetadata\ColumnDefinitions\ColumnDefinitionsHandler
+     * @return \FlorentPoujol\LaravelAttributePresets\ColumnDefinitions\ColumnDefinitionsHandler
      */
     public function getColumnDefinitions(): ColumnDefinitionsHandler
     {
@@ -91,7 +91,7 @@ class AttributeMetadata
     }
 
     /**
-     * @return \FlorentPoujol\LaravelModelMetadata\ModelProperties\ModelPropertiesHandler
+     * @return \FlorentPoujol\LaravelAttributePresets\ModelProperties\ModelPropertiesHandler
      */
     public function getModelPropertiesHandler(): ModelPropertiesHandler
     {

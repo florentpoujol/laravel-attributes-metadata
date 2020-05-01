@@ -1,6 +1,6 @@
 <?php
 
-namespace FlorentPoujol\LaravelModelMetadata;
+namespace FlorentPoujol\LaravelAttributePresets;
 
 trait HasAttributeName
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata\ModelProperties;
+namespace FlorentPoujol\LaravelAttributePresets\ModelProperties;
 
 class ModelPropertiesHandler
 {

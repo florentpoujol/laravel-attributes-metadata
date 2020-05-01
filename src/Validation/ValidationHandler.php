@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelModelMetadata\Validation;
+namespace FlorentPoujol\LaravelAttributePresets\Validation;
 
 class ValidationHandler
 {
