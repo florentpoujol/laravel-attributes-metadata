@@ -41,4 +41,22 @@ trait HasAttributePresets
 
         return $modelMetadata->get($name);
     }
+
+    /**
+     * @param string|array<string> $attributes One or several attribute names to restrict the results to
+     *
+     * @return array<string, array<string|object>> Validation rules (as array) per attribute name
+     */
+    public static function getValidationRules($attributes = []): array
+    {
+        return static::getAttributePresetCollection()
+            ->filterByNames($attributes)
+            ->mapWithKeys(function (BasePreset $attr) {
+                return [
+                    $attr->getName(),
+                    $attr->getValidationRules()
+                ];
+            })
+            ->toArray();
+    }
 }
