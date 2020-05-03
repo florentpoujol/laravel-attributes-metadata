@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets;
 
-use FlorentPoujol\LaravelAttributePresets\ColumnDefinitions\ColumnDefinitionsHandler;
-use FlorentPoujol\LaravelAttributePresets\ModelProperties\ModelPropertiesHandler;
+use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesColumnDefinitions;
 use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesValidation;
 use Laravel\Nova\Fields\Field;
 
@@ -26,70 +25,8 @@ class BasePreset
         return $this->name;
     }
 
-    // --------------------------------------------------
-
-    /** @var array<string, string|callable> Keys are Fqcn, values are Fqcn or factories */
-    protected static $registeredHandlers = [
-        ColumnDefinitionsHandler::class => [ColumnDefinitionsHandler::class, 'make'],
-        ModelPropertiesHandler::class => ModelPropertiesHandler::class,
-    ];
-
-    /**
-     * @param string $fqcn
-     * @param null|callable $factory
-     */
-    public static function registerHandler(string $fqcn, callable $factory = null): void
-    {
-        static::$registeredHandlers[$fqcn] = $factory ?: $fqcn;
-    }
-
-    /** @var array<string, object> Handler instances per Fqcn */
-    protected $handlers = [];
-
-    public function getHandler(string $fqcn): ?object
-    {
-        $handler = $this->handlers[$fqcn] ?? null;
-        if ($handler === null || is_object($handler)) {
-            return $handler;
-        }
-
-        if (is_string($handler)) {
-            $handler = new $handler();
-        } elseif (is_callable($handler)) {
-            $handler = $handler();
-        }
-
-        $this->handlers[$fqcn] = $handler;
-
-        return $handler;
-    }
-
-    // --------------------------------------------------
-    // Convenience methods for the default handlers
-
-    /**
-     * @return \FlorentPoujol\LaravelAttributePresets\ColumnDefinitions\ColumnDefinitionsHandler
-     */
-    public function getColumnDefinitions(): ColumnDefinitionsHandler
-    {
-        /** @var ColumnDefinitionsHandler $handler */
-        $handler = $this->getHandler(ColumnDefinitionsHandler::class);
-
-        return $handler;
-    }
-
-    /**
-     * @return \FlorentPoujol\LaravelAttributePresets\ModelProperties\ModelPropertiesHandler
-     */
-    public function getModelPropertiesHandler(): ModelPropertiesHandler
-    {
-        /** @var ModelPropertiesHandler $handler */
-        $handler = $this->getHandler(ModelPropertiesHandler::class);
-
-        return $handler;
-    }
-
     use ProvidesValidation;
+    use ProvidesColumnDefinitions;
 
     // --------------------------------------------------
     // Nova Fields
@@ -590,7 +527,7 @@ class BasePreset
 
         $columnType = $this->getColumnType();
         if ($columnType === 'string' || $columnType === 'char') {
-            $this->setColumnType($columnType, $value);
+            $this->setType($columnType, $value);
         }
 
         return $this;

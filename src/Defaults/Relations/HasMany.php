@@ -13,6 +13,6 @@ class HasMany extends Relation
     {
         parent::__construct('hasMany', $relationParams);
 
-        $this->getColumnDefinitions()->clear(); // the DB field in on other tables
+        $this->clearColumnDefinitions(); // the DB field in on other tables
     }
 }

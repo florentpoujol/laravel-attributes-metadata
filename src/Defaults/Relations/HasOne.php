@@ -13,6 +13,6 @@ class HasOne extends Relation
     {
         parent::__construct('hasOne', $relationParams, $withIndex);
 
-        $this->getColumnDefinitions()->clear(); // the DB field in on other tables
+        $this->clearColumnDefinitions(); // the DB field in on other tables
     }
 }
