@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelAttributePresets;
 
 use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesColumnDefinitions;
+use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesNovaFields;
 use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesValidation;
-use Laravel\Nova\Fields\Field;
 
 class BasePreset
 {
@@ -27,131 +27,7 @@ class BasePreset
 
     use ProvidesValidation;
     use ProvidesColumnDefinitions;
-
-    // --------------------------------------------------
-    // Nova Fields
-
-    /** @var array<string, null|\Laravel\Nova\Fields\Field> */
-    protected $novaFields = [
-        'index' => null,
-        'detail' => null,
-        'create' => null,
-        'update' => null,
-    ];
-
-    /** @var string */
-    protected $novaFieldFqcn;
-
-    /** @var array<string, null|mixed|array<mixed>>  */
-    protected $novaFieldDefinitions = [
-        'sortable' => null
-    ];
-
-    public function setNovaFieldType(string $typeOrFqcn): self
-    {
-        $typeOrFqcn = ucfirst($typeOrFqcn);
-        switch ($typeOrFqcn) {
-            case 'Id':
-                $typeOrFqcn = 'ID';
-                break;
-            case 'String':
-                $typeOrFqcn = 'Text';
-                break;
-            case 'Text':
-                $typeOrFqcn = 'Textarea';
-                break;
-            case 'Json':
-                $typeOrFqcn = 'Code';
-                break;
-            case 'Datetime':
-            case 'Timestamp':
-                $typeOrFqcn = 'DateTime';
-                break;
-        }
-
-        $this->novaFieldFqcn = '\\Laravel\\Nova\\Fields\\' . $typeOrFqcn;
-
-        return $this;
-    }
-
-    /**
-     * @param null|mixed $value
-     */
-    public function setNovaFieldDefinition(string $key, $value = null): self
-    {
-        $this->novaFieldDefinitions[$key] = $value;
-
-        return $this;
-    }
-
-    public function removeNovaFieldDefinition(string $key): self
-    {
-        unset($this->novaFieldDefinitions[$key]);
-
-        return $this;
-    }
-
-    /**
-     * @param null|string $page 'index', 'details', 'create', 'update'
-     *
-     * @return array<\Laravel\Nova\Fields\Field>
-     */
-    public function getNovaFields(string $page = null): array
-    {
-        return
-            $this->novaFields[$page ?: 'index'] ??
-            $this->novaFields['index'] ?? [];
-    }
-
-    /**
-     * @param mixed ...$args
-     *
-     * @return \Laravel\Nova\Fields\Field
-     */
-    public function setupNovaField(...$args): Field
-    {
-
-    }
-
-    /**
-     * @param null|\Laravel\Nova\Fields\Field $field
-     * @param null|string $page 'index', 'details', 'create', 'update'
-     */
-    public function setNovaField($field, string $page = null): self
-    {
-        if ($page !== null) {
-            $this->novaFields[$page] = $field;
-
-            return $this;
-        }
-
-        if ($field === null) {
-            $this->novaFields = [
-                'index' => null,
-                'details' => null,
-                'create' => null,
-                'update' => null,
-            ];
-
-            return $this;
-        }
-
-        // $field is an instance of Field and $page is null
-        if ($field->showOnIndex) {
-            $this->novaFields['index'] = $field;
-        }
-        if ($field->showOnDetail) {
-            $this->novaFields['details'] = $field;
-        }
-        if ($field->showOnCreation) {
-            $this->novaFields['create'] = $field;
-        }
-        if ($field->showOnUpdate) {
-            $this->novaFields['update'] = $field;
-        }
-
-        return $this;
-    }
+    use ProvidesNovaFields;
 
     // --------------------------------------------------
     // cast and mutators
@@ -274,7 +150,6 @@ class BasePreset
         return $this->relationMethod !== null;
     }
 
-
     // --------------------------------------------------
     // Nullable
 
@@ -355,14 +230,14 @@ class BasePreset
         $this->isUnsigned = $isUnsigned;
 
         if ($isUnsigned) {
+            $this->getColumnDefinitions()->unsigned();
             $this
-                ->addColumnDefinition('unsigned')
                 ->setValidationRule('numeric', 0)
                 ->setMinValue(0);
         } else {
-            $this
-                ->removeColumnDefinition('unsigned')
-                ->setMinValue(null);
+            $this->setMinValue(null);
+
+            $this->getColumnDefinitions()->removeDefinition('unsigned');
         }
 
         return $this;
@@ -387,7 +262,7 @@ class BasePreset
         $this->defaultValue = $value;
 
         if ($affectDbColumn) {
-            $this->addColumnDefinition('default', $value);
+            $this->getColumnDefinitions()->default($value);
         }
 
         return $this;
@@ -420,17 +295,15 @@ class BasePreset
         $this->isIncrementingPrimaryKey = $this->primaryKeyType === 'int' ? $isIncrementing : false;
 
         if ($this->isPrimaryKey) {
-            $this
-                ->addColumnDefinition('primary')
-                ->setNovaFieldType('id');
+            $this->getColumnDefinitions()->primary();
+            $this->setNovaFieldType('id');
         } else {
-            $this
-                ->removeColumnDefinition('primary')
-                ->removeColumnDefinition('autoIncrement');
+            $this->getColumnDefinitions()->removeDefinition('primary');
+            $this->getColumnDefinitions()->removeDefinition('autoIncrement');
         }
 
         if ($this->isIncrementingPrimaryKey) {
-            $this->addColumnDefinition('autoIncrement');
+            $this->getColumnDefinitions()->autoIncrement();
         }
 
         return $this;
@@ -525,9 +398,9 @@ class BasePreset
             $this->removeValidationRule('max');
         }
 
-        $columnType = $this->getColumnType();
+        $columnType = $this->getColumnDefinitions()->getType();
         if ($columnType === 'string' || $columnType === 'char') {
-            $this->setType($columnType, $value);
+            $this->getColumnDefinitions()->setType($columnType, $value);
         }
 
         return $this;
