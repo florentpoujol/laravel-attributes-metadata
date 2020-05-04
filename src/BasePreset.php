@@ -10,6 +10,12 @@ use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesValidation;
 
 class BasePreset
 {
+    use ProvidesValidation;
+    use ProvidesColumnDefinitions;
+    use ProvidesNovaFields;
+
+    // --------------------------------------------------
+
     /** @var null|string The name of the attribute. Usually set from ModelMetadata->getAttributeMetadata()`. */
     protected $name;
 
@@ -25,12 +31,7 @@ class BasePreset
         return $this->name;
     }
 
-    use ProvidesValidation;
-    use ProvidesColumnDefinitions;
-    use ProvidesNovaFields;
-
     // --------------------------------------------------
-    // cast and mutators
 
     /** @var null|string|object */
     protected $cast;
@@ -63,56 +64,7 @@ class BasePreset
         return $this->cast;
     }
 
-    /** @var null|string */
-    protected $castTarget;
-
-    public function setCastTarget(string $castTarget)
-    {
-        $this->castTarget = $castTarget;
-
-        return $this;
-    }
-
-    public function hasCastTarget(): bool
-    {
-        return $this->castTarget !== null;
-    }
-
-    public function getCastTarget(): ?string
-    {
-        return $this->castTarget;
-    }
-
-    protected $hasSetter = false;
-
-    public function markHasSetter(bool $hasSetter = true): self
-    {
-        $this->hasSetter = $hasSetter;
-
-        return $this;
-    }
-
-    public function hasSetter(): bool
-    {
-        return $this->hasSetter;
-    }
-
-    protected $hasGetter = false;
-
-    public function markHasGetter(bool $hasGetter = true): self
-    {
-        $this->hasGetter = $hasGetter;
-
-        return $this;
-    }
-
-    public function hasGetter(): bool
-    {
-        return $this->hasGetter;
-    }
-
     // --------------------------------------------------
-    // Relation
 
     /** @var null|string The name of the relation, on the base Eloquent model that return the relation instance */
     protected $relationMethod;
@@ -151,7 +103,6 @@ class BasePreset
     }
 
     // --------------------------------------------------
-    // Hidden
 
     protected $isHidden = false;
 
@@ -174,7 +125,6 @@ class BasePreset
     }
 
     // --------------------------------------------------
-    // Guarded
 
     protected $isGuarded = false;
 
@@ -191,7 +141,6 @@ class BasePreset
     }
 
     // --------------------------------------------------
-    // Fillable
 
     protected $isFillable = true;
 
@@ -208,7 +157,6 @@ class BasePreset
     }
 
     // --------------------------------------------------
-    // Date
 
     protected $isDate = false;
 
@@ -225,7 +173,6 @@ class BasePreset
     }
 
     // --------------------------------------------------
-    // Nullable
 
     protected $isNullable = false;
 
@@ -239,7 +186,7 @@ class BasePreset
                 ->setNovaFieldDefinition('nullable');
 
             if ($affectDbColumn) {
-                $this->addColumnDefinition('nullable');
+                $this->getColumnDefinitions()->nullable();
             }
         } else {
             $this
@@ -247,7 +194,7 @@ class BasePreset
                 ->removeNovaFieldDefinition('nullable');
 
             if ($affectDbColumn) {
-                $this->removeColumnDefinition('nullable');
+                $this->getColumnDefinitions()->removeDefinition('nullable');
             }
         }
 
@@ -260,7 +207,6 @@ class BasePreset
     }
 
     // --------------------------------------------------
-    // Required
 
     protected $isRequired = false;
 
@@ -290,7 +236,6 @@ class BasePreset
     }
 
     // --------------------------------------------------
-    // Unsigned
 
     protected $isUnsigned = false;
 
@@ -323,7 +268,6 @@ class BasePreset
     }
 
     // --------------------------------------------------
-    // Default value
 
     /** @var null|mixed */
     protected $defaultValue;
@@ -356,7 +300,6 @@ class BasePreset
     }
 
     // --------------------------------------------------
-    // Primary key
 
     protected $isPrimaryKey = false;
     protected $primaryKeyType = 'int';
@@ -399,7 +342,6 @@ class BasePreset
     }
 
     // --------------------------------------------------
-    // Min / Max / Step
 
     /** @var int|float */
     protected $minValue;
