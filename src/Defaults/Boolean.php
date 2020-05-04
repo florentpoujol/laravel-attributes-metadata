@@ -11,8 +11,8 @@ class Boolean extends BasePreset
     public function __construct(bool $defaultValue = null)
     {
         $this->getColumnDefinitions()->setType('boolean');
+        $this->getNovaDefinitions()->setFieldType('boolean')->nullable();
         $this->setValidationRule('boolean');
-        $this->setNovaFieldType('boolean');
         $this->setCast('boolean');
 
         if ($defaultValue !== null) {

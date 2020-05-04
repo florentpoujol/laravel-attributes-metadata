@@ -2,10 +2,51 @@
 
 namespace FlorentPoujol\LaravelAttributePresets\PresetTraits;
 
+use FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition;
 use Laravel\Nova\Fields\Field;
 
 trait ProvidesNovaFields
 {
+    protected $indexNovaDefinitions;
+    protected $detailNovaDefinitions;
+    protected $createNovaDefinitions;
+    protected $updateNovaDefinitions;
+
+    public function getIndexNovaDefinitions()
+    {
+        if ($this->indexNovaDefinitions === null) {
+            $this->indexNovaDefinitions = new NovaFieldDefinition();
+        }
+
+        return $this->indexNovaDefinitions;
+    }
+
+    public function getUpdateNovaDefinitions()
+    {
+        return $this->updateNovaDefinitions ?: $this->getIndexNovaDefinitions();
+    }
+
+    public function setIndexNovaDefinitions($defs)
+    {
+        $this->indexNovaDefinitions = $defs;
+    }
+
+
+    /** @var \FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition */
+    protected $novaFieldDefinitions;
+
+    /**
+     * @return \FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition
+     */
+    public function getNovaDefinitions(): NovaFieldDefinition
+    {
+        if ($this->novaFieldDefinitions === null) {
+            $this->novaFieldDefinitions = new NovaFieldDefinition();
+        }
+
+        return $this->novaFieldDefinitions;
+    }
+
     /** @var array<string, null|\Laravel\Nova\Fields\Field> */
     protected $novaFields = [
         'index' => null,
@@ -18,12 +59,17 @@ trait ProvidesNovaFields
     protected $novaFieldFqcn;
 
     /** @var array<string, null|mixed|array<mixed>>  */
-    protected $novaFieldDefinitions = [
-        'sortable' => null
-    ];
+    // protected $novaFieldDefinitions = [
+    //     'sortable' => null
+    // ];
 
     public function setNovaFieldType(string $typeOrFqcn): self
     {
+        if (strpos($typeOrFqcn, '\\') !== false) {
+            $this->novaFieldFqcn = $typeOrFqcn;
+            return $this;
+        }
+
         $typeOrFqcn = ucfirst($typeOrFqcn);
         switch ($typeOrFqcn) {
             case 'Id':
@@ -31,9 +77,6 @@ trait ProvidesNovaFields
                 break;
             case 'String':
                 $typeOrFqcn = 'Text';
-                break;
-            case 'Text':
-                $typeOrFqcn = 'Textarea';
                 break;
             case 'Json':
                 $typeOrFqcn = 'Code';

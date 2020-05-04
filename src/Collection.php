@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets;
 
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Collection as BaseCollection;
 
 class Collection extends BaseCollection
@@ -188,6 +189,44 @@ class Collection extends BaseCollection
         return $this
             ->first(function (BasePreset $preset) {
                 return $preset->isPrimaryKey();
+            });
+    }
+
+    public function getValidationRules($attributes = []): array
+    {
+        return $this
+            ->filterByNames($attributes)
+            ->mapWithKeys(function (BasePreset $attr, string $attrName) {
+                return [$attrName, $attr->getValidationRules()];
+            })
+            ->toArray();
+    }
+
+    /**
+     * @param string|array<string> $attributes One or several attribute names to restrict the results to
+     *
+     * @return array<string, array<string|object>> Validation rules (as array) per attribute name
+     */
+    public function addColumnsToTable(Blueprint $table, $attributes = []): void
+    {
+        $this
+            ->filterByNames($attributes)
+            ->each(function (BasePreset $attr) use ($table) {
+                $attr
+                    ->getColumnDefinitions()
+                    ->addToTable($table);
+            });
+    }
+
+    public function getNovaIndexFields($attributes = [])
+    {
+        return $this
+            ->filterByNames($attributes)
+            ->keep(function (BasePreset $attr) {
+                return $this->hasIndexNovaField();
+            })
+            ->mapWithKeys(function (BasePreset $attr, string $attrName) {
+                return [$attrName => $attr->getNovaIndexField()];
             });
     }
 

@@ -51,12 +51,7 @@ trait HasAttributePresets
      */
     public static function getValidationRules($attributes = []): array
     {
-        return static::getAttributePresetCollection()
-            ->filterByNames($attributes)
-            ->mapWithKeys(function (BasePreset $attr, string $attrName) {
-                return [$attrName, $attr->getValidationRules()];
-            })
-            ->toArray();
+        return static::getAttributePresetCollection()->getValidationRules($attributes);
     }
 
     /**
@@ -66,12 +61,16 @@ trait HasAttributePresets
      */
     public static function addColumnsToTable(Blueprint $table, $attributes = []): void
     {
-        static::getAttributePresetCollection()
-            ->filterByNames($attributes)
-            ->each(function (BasePreset $attr) use ($table) {
-                $attr
-                    ->getColumnDefinitions()
-                    ->addToTable($table);
-            });
+        static::getAttributePresetCollection()->addColumnsToTable($table, $attributes);
+    }
+
+    /**
+     * @param string|array<string> $attributes One or several attribute names to restrict the results to
+     *
+     * @return array<string, array<string|object>> Validation rules (as array) per attribute name
+     */
+    public static function getNovaIndexFields($attributes = []): void
+    {
+        static::getAttributePresetCollection()->getNovaIndexFields($attributes);
     }
 }
