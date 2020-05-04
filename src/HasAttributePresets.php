@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets;
 
+use Illuminate\Database\Schema\Blueprint;
+
 /**
  * @method static getRawAttributePresets(): array Shall be implemented typically in the model class itself
  */
@@ -51,12 +53,25 @@ trait HasAttributePresets
     {
         return static::getAttributePresetCollection()
             ->filterByNames($attributes)
-            ->mapWithKeys(function (BasePreset $attr) {
-                return [
-                    $attr->getName(),
-                    $attr->getValidationRules()
-                ];
+            ->mapWithKeys(function (BasePreset $attr, string $attrName) {
+                return [$attrName, $attr->getValidationRules()];
             })
             ->toArray();
+    }
+
+    /**
+     * @param string|array<string> $attributes One or several attribute names to restrict the results to
+     *
+     * @return array<string, array<string|object>> Validation rules (as array) per attribute name
+     */
+    public static function addColumnsToTable(Blueprint $table, $attributes = []): void
+    {
+        static::getAttributePresetCollection()
+            ->filterByNames($attributes)
+            ->each(function (BasePreset $attr) use ($table) {
+                $attr
+                    ->getColumnDefinitions()
+                    ->addToTable($table);
+            });
     }
 }

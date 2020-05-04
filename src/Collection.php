@@ -83,7 +83,10 @@ class Collection extends BaseCollection
         return array_keys($this->rawPresets);
     }
 
-    public function filterByNames(array $attributes = [])
+    /**
+     * @param string|array<string> $attributes One or several attribute names to filter the collection with
+     */
+    public function filterByNames($attributes = []): self
     {
         if (! is_array($attributes)) {
             $attributes = [$attributes];
@@ -93,8 +96,8 @@ class Collection extends BaseCollection
             return $this;
         }
 
-        return $this->filter(function (BasePreset $preset) use ($attributes) {
-            return in_array($preset->getName(), $attributes);
+        return $this->filter(function (BasePreset $attr) use ($attributes) {
+            return in_array($attr->getName(), $attributes);
         });
     }
 
