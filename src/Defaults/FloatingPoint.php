@@ -18,14 +18,11 @@ class FloatingPoint extends BasePreset
         switch ($type) {
             case 'float':
             case 'double':
-                $this
-                    ->setCast('float');
-
+                $this->setCast('float');
                 $this->setValidationRule('float');
                 break;
             case 'decimal':
-                $this
-                    ->setCast('decimal', $precision[1]);
+                $this->setCast('decimal', $precision[1]);
                 break;
         }
 

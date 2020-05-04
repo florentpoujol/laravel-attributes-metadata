@@ -26,8 +26,6 @@ class Varchar extends BasePreset
 
     public function primary(): self
     {
-        $this->getColumnDefinitions()->primary();
-
         $this->markPrimaryKey(true, 'string', false); // string, not incrementing
 
         return $this;

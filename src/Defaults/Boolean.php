@@ -10,14 +10,13 @@ class Boolean extends BasePreset
 {
     public function __construct(bool $defaultValue = null)
     {
-        $this
-            ->setNovaFieldType('boolean');
-
         $this->getColumnDefinitions()->setType('boolean');
         $this->setValidationRule('boolean');
+        $this->setNovaFieldType('boolean');
+        $this->setCast('boolean');
 
         if ($defaultValue !== null) {
-            $this->setDefaultValue($defaultValue);
+            $this->setDefaultValue($defaultValue, true);
         }
     }
 }

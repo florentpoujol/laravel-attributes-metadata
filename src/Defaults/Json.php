@@ -6,12 +6,12 @@ namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
 class Json extends Text
 {
-    public function __construct(bool $asArray = true)
+    public function __construct(bool $castAsArray = true)
     {
         parent::__construct();
 
         $this->getColumnDefinitions()->setType('json');
-        $this->setValidationRule($asArray ? 'array' : 'object');
+        $this->setCast($castAsArray ? 'array' : 'object');
 
         $this
             ->setNovaFieldType('code')

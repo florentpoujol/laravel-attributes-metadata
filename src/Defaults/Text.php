@@ -13,7 +13,20 @@ class Text extends BasePreset
      */
     public function __construct(string $size = 'text')
     {
-        $this->getColumnDefinitions()
-            ->setType($size === 'text' ? 'text' : $size . 'Text');
+        switch (strtolower($size)) {
+            case 'long':
+            case 'longtext':
+                $size = 'longText';
+                break;
+            case 'medium':
+            case 'mediumtext':
+                $size = 'mediumText';
+                break;
+            default:
+                $size = 'text';
+                break;
+        }
+
+        $this->getColumnDefinitions()->setType($size);
     }
 }

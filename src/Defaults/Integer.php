@@ -44,8 +44,10 @@ class Integer extends BasePreset
                 break;
         }
 
+        $this->setCast('int');
+        $this->setValidationRule('int');
+
         $this
-            ->setCast('int')
             ->setNovaFieldType('number')
             ->setNovaFieldDefinition('step', 1);
 
@@ -53,8 +55,6 @@ class Integer extends BasePreset
         if ($isUnsigned) {
             $definitions->unsigned();
         }
-
-        $this->setValidationRule('int');
 
         if (isset($min)) {
             $this->setMinValue($min);

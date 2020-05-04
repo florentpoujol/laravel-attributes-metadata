@@ -15,7 +15,6 @@ class DateTime extends BasePreset
     {
         $this
             ->markDate(true)
-            // ->setCast('datetime', $castFormat)
             ->setNovaFieldType($type);
 
         $params = $precision ? [$precision] : [];
