@@ -151,6 +151,80 @@ class BasePreset
     }
 
     // --------------------------------------------------
+    // Hidden
+
+    protected $isHidden = false;
+
+    public function markHidden(bool $isHidden = true): self
+    {
+        $this->isHidden = $isHidden;
+
+        if ($isHidden) {
+            $this
+                ->setNovaFieldDefinition('hideFromIndex')
+                ->setNovaFieldDefinition('hideFromDetails');
+        }
+
+        return $this;
+    }
+
+    public function isHidden(): bool
+    {
+        return $this->isHidden;
+    }
+
+    // --------------------------------------------------
+    // Guarded
+
+    protected $isGuarded = false;
+
+    public function markGuarded(bool $isGuarded = true): self
+    {
+        $this->isGuarded = $isGuarded;
+
+        return $this;
+    }
+
+    public function isGuarded(): bool
+    {
+        return $this->isGuarded;
+    }
+
+    // --------------------------------------------------
+    // Fillable
+
+    protected $isFillable = true;
+
+    public function markFillable(bool $isFillable = true): self
+    {
+        $this->isFillable = $isFillable;
+
+        return $this;
+    }
+
+    public function isFillable(): bool
+    {
+        return $this->isFillable;
+    }
+
+    // --------------------------------------------------
+    // Date
+
+    protected $isDate = false;
+
+    public function markDate(bool $isDate = true): self
+    {
+        $this->isDate = $isDate;
+
+        return $this;
+    }
+
+    public function isDate(): bool
+    {
+        return $this->isDate;
+    }
+
+    // --------------------------------------------------
     // Nullable
 
     protected $isNullable = false;

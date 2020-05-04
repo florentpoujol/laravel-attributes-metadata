@@ -107,11 +107,11 @@ class Collection extends BaseCollection
     public function getDefaultValues(): array
     {
         return $this
-            ->keep(function (BasePreset $preset) {
-                return $preset->hasDefaultValue();
+            ->keep(function (BasePreset $attr) {
+                return $attr->hasDefaultValue();
             })
-            ->mapWithKeys(function (BasePreset $preset, string $key) {
-                return [$key => $preset->getDefaultValue()];
+            ->mapWithKeys(function (BasePreset $attr, string $attrName) {
+                return [$attrName => $attr->getDefaultValue()];
             })
             ->toArray();
     }
@@ -122,8 +122,8 @@ class Collection extends BaseCollection
     public function getFillable(): array
     {
         return $this
-            ->keep(function (BasePreset $preset) {
-                return $preset->getModelPropertiesHandler()->isFillable();
+            ->keep(function (BasePreset $attr) {
+                return $attr->isFillable();
             })
             ->keys()
             ->toArray();
@@ -135,8 +135,8 @@ class Collection extends BaseCollection
     public function getGuarded(): array
     {
         return $this
-            ->keep(function (BasePreset $preset) {
-                return $preset->isGuarded();
+            ->keep(function (BasePreset $attr) {
+                return $attr->isGuarded();
             })
             ->keys()
             ->toArray();
@@ -148,8 +148,8 @@ class Collection extends BaseCollection
     public function getHidden(): array
     {
         return $this
-            ->keep(function (BasePreset $preset) {
-                return $preset->isHidden();
+            ->keep(function (BasePreset $attr) {
+                return $attr->isHidden();
             })
             ->keys()
             ->toArray();
@@ -161,17 +161,31 @@ class Collection extends BaseCollection
     public function getDates(): array
     {
         return $this
-            ->keep(function (BasePreset $preset) {
-                return $preset->isDate();
+            ->keep(function (BasePreset $attr) {
+                return $attr->isDate();
             })
             ->keys()
             ->toArray();
     }
 
-    public function getPrimaryKeyMeta(): ?BasePreset
+    /**
+     * @return array<string, mixed> The attributes that have a default values and their values
+     */
+    public function getCasts(): array
     {
         return $this
-            ->getAttrCollection()
+            ->keep(function (BasePreset $attr) {
+                return $attr->hasCast();
+            })
+            ->mapWithKeys(function (BasePreset $attr, string $attrName) {
+                return [$attrName => $attr->getCast()];
+            })
+            ->toArray();
+    }
+
+    public function getPrimaryKeyPreset(): ?BasePreset
+    {
+        return $this
             ->first(function (BasePreset $preset) {
                 return $preset->isPrimaryKey();
             });

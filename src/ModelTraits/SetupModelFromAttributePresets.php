@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\ModelTraits;
 
-use FlorentPoujol\LaravelAttributePresets\BasePreset;
-
 /**
  * To be added on model classes that have relations defined in their preset.
  *
@@ -17,28 +15,16 @@ trait SetupModelFromAttributePresets
     /** @var null|array<string, mixed> */
     protected static $defaultValues;
 
-    public static function bootSetupModelFromAttributePresets(): void
+    public function initializeSetupModelFromAttributePresets(): void
     {
-        static::compileDefaultValuesFromMetadata();
-    }
+        if (static::$defaultValues === null) {
+            static::$defaultValues = static::getAttributePresetCollection()
+                ->getDefaultValues();
+        }
 
-    protected static function compileDefaultValuesFromMetadata(): void
-    {
-        static::getAttributePresetCollection()
-            ->keep(function (BasePreset $attr) {
-                return $attr->getModelPropertiesHandler()->hasDefaultValue();
-            })
-            ->mapWithKeys(function (BasePreset $attr) {
-                return [
-                    $attr->getName(),
-                    $attr->getModelPropertiesHandler()->getDefaultValue()
-                ];
-            });
-
-        static::$defaultValues = array_merge(
-            static::getAttributePresetCollection()->getDefaultValues(),
-            // default values already set on the model takes precedence
-            (new static())->attributes // property is protected but this is allowed since we are inside the model class
+        $this->attributes = array_merge(
+            static::$defaultValues,
+            $this->attributes
         );
     }
 
@@ -53,18 +39,13 @@ trait SetupModelFromAttributePresets
     public function getFillable(): array // from built-in GuardsAttributes trait
     {
         if (static::$staticFillable === null) {
-            static::compileFillableFromMetadata();
+            static::$staticFillable = array_values(array_unique(array_merge(
+                (new static())->fillable,
+                static::getAttributePresetCollection()->getFillable()
+            )));
         }
 
         return static::$staticFillable;
-    }
-
-    protected static function compileFillableFromMetadata(): void
-    {
-        static::$staticFillable = array_values(array_unique(array_merge(
-            (new static())->fillable,
-            static::getAttributePresetCollection()->getFillable()
-        )));
     }
 
     // --------------------------------------------------
@@ -78,18 +59,13 @@ trait SetupModelFromAttributePresets
     public function getGuarded(): array // from built-in GuardsAttributes trait
     {
         if (static::$staticGuarded === null) {
-            static::compileGuardedFromMetadata();
+            static::$staticGuarded = array_values(array_unique(array_merge(
+                static::getAttributePresetCollection()->getGuarded(),
+                (new static())->guarded
+            )));
         }
 
         return static::$staticGuarded;
-    }
-
-    protected static function compileGuardedFromMetadata(): void
-    {
-        static::$staticGuarded = array_values(array_unique(array_merge(
-            (new static())->guarded,
-            static::getAttributePresetCollection()->getGuarded()
-        )));
     }
 
     // --------------------------------------------------
@@ -103,18 +79,13 @@ trait SetupModelFromAttributePresets
     public function getHidden(): array // from built-in HidesAttributes trait
     {
         if (static::$staticHidden === null) {
-            static::compileHiddenFromMetadata();
+            static::$staticHidden = array_values(array_unique(array_merge(
+                static::getAttributePresetCollection()->getHidden(),
+                (new static())->hidden
+            )));
         }
 
         return static::$staticHidden;
-    }
-
-    protected static function compileHiddenFromMetadata(): void
-    {
-        static::$staticHidden = array_values(array_unique(array_merge(
-            (new static())->hidden,
-            static::getAttributePresetCollection()->getHidden()
-        )));
     }
 
     // --------------------------------------------------
@@ -128,25 +99,20 @@ trait SetupModelFromAttributePresets
     public function getDates(): array // from built-in Model class
     {
         if (static::$staticDates === null) {
-            static::compileDatesFromMetadata();
+            $model = new static();
+            $defaults = $model->usesTimestamps() ? [
+                static::CREATED_AT,
+                static::UPDATED_AT,
+            ] : [];
+
+            static::$staticDates = array_values(array_unique(array_merge(
+                static::getAttributePresetCollection()->getDates(),
+                $model->dates,
+                $defaults
+            )));
         }
 
         return static::$staticDates;
-    }
-
-    protected static function compileDatesFromMetadata(): void
-    {
-        $model = new static();
-        $defaults = $model->usesTimestamps() ? [
-            static::CREATED_AT,
-            static::UPDATED_AT,
-        ] : [];
-
-        static::$staticDates = array_values(array_unique(array_merge(
-            $defaults,
-            (new static())->dates,
-            static::getAttributePresetCollection()->getDates()
-        )));
     }
 
     // --------------------------------------------------
@@ -155,8 +121,6 @@ trait SetupModelFromAttributePresets
     protected static $staticCastTypes;
 
     /**
-     * @param string $key
-     *
      * @return string
      */
     public function getCastType(string $attribute) // from built-in HasAttributes trait
@@ -165,7 +129,7 @@ trait SetupModelFromAttributePresets
             static::compileCasts();
         }
 
-        return static::$staticCastTypes[$attribute];
+        return static::$staticCastTypes[$attribute]; // getCastType() is always called with the knowledge that the attribute has a cast
     }
 
     /** @var null|array<string, string|object> */
@@ -183,8 +147,8 @@ trait SetupModelFromAttributePresets
     protected static function compileCasts(): void
     {
         static::$staticCasts = array_merge(
-            (new static())->casts,
-            static::getAttributePresetCollection()->getCasts()
+            static::getAttributePresetCollection()->getCasts(),
+            (new static())->casts
         );
 
         static::$staticCastTypes = [];
@@ -247,15 +211,14 @@ trait SetupModelFromAttributePresets
         static::$staticKeyType = $model->keyType;
         static::$staticKeyName = $model->primaryKey;
 
-        /** @var \FlorentPoujol\LaravelAttributePresets\BasePreset $primaryKeyMeta */
-        $primaryKeyMeta = static::getAttributePresetCollection()->getPrimaryKeyMeta();
-        if ($primaryKeyMeta === null) {
+        $primaryKeyAttr = static::getAttributePresetCollection()->getPrimaryKeyPreset();
+        if ($primaryKeyAttr === null) {
             return;
         }
 
-        static::$staticIncrementing = $primaryKeyMeta->isIncrementingPrimaryKey();
-        static::$staticKeyType = $primaryKeyMeta->getPrimaryKeyType();
-        static::$staticKeyName = $primaryKeyMeta->getName() ?: $model->primaryKey;
+        static::$staticIncrementing = $primaryKeyAttr->isIncrementingPrimaryKey();
+        static::$staticKeyType = $primaryKeyAttr->getPrimaryKeyType();
+        static::$staticKeyName = $primaryKeyAttr->getName() ?: $model->primaryKey;
     }
 }
 
