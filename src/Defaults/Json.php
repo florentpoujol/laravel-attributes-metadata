@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
+use FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition;
+
 class Json extends Text
 {
     public function __construct(bool $castAsArray = true)
@@ -13,8 +15,8 @@ class Json extends Text
         $this->getColumnDefinitions()->setType('json');
         $this->setCast($castAsArray ? 'array' : 'object');
 
-        $this
-            ->setNovaFieldType('code')
-            ->setNovaFieldDefinition('json');
+        $this->setNovaField(
+            NovaFieldDefinition::json('code')
+        );
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
 use FlorentPoujol\LaravelAttributePresets\BasePreset;
+use FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition;
 
 class Text extends BasePreset
 {
@@ -28,5 +29,7 @@ class Text extends BasePreset
         }
 
         $this->getColumnDefinitions()->setType($size);
+
+        $this->setNovaField(NovaFieldDefinition::textarea());
     }
 }

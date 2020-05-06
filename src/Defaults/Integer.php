@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
 use FlorentPoujol\LaravelAttributePresets\BasePreset;
+use FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition;
 
 class Integer extends BasePreset
 {
@@ -47,9 +48,10 @@ class Integer extends BasePreset
         $this->setCast('int');
         $this->setValidationRule('int');
 
-        $this
-            ->setNovaFieldType('number')
-            ->setNovaFieldDefinition('step', 1);
+        $novaField = NovaFieldDefinition::make('number')
+            ->sortable()
+            ->step(1);
+        $this->setNovaField($novaField);
 
         $definitions = $this->getColumnDefinitions()->setType($field);
         if ($isUnsigned) {
@@ -57,12 +59,12 @@ class Integer extends BasePreset
         }
 
         if (isset($min)) {
-            $this->setMinValue($min);
+            $novaField->min($min);
             $this->setValidationRule('min', $min);
         }
 
         if (isset($max)) {
-            $this->setMaxValue($max);
+            $novaField->max($min);
             $this->setValidationRule('max', $max);
         }
     }

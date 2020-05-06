@@ -65,29 +65,7 @@ trait ProvidesNovaFields
 
     public function setNovaFieldType(string $typeOrFqcn): self
     {
-        if (strpos($typeOrFqcn, '\\') !== false) {
-            $this->novaFieldFqcn = $typeOrFqcn;
-            return $this;
-        }
 
-        $typeOrFqcn = ucfirst($typeOrFqcn);
-        switch ($typeOrFqcn) {
-            case 'Id':
-                $typeOrFqcn = 'ID';
-                break;
-            case 'String':
-                $typeOrFqcn = 'Text';
-                break;
-            case 'Json':
-                $typeOrFqcn = 'Code';
-                break;
-            case 'Datetime':
-            case 'Timestamp':
-                $typeOrFqcn = 'DateTime';
-                break;
-        }
-
-        $this->novaFieldFqcn = '\\Laravel\\Nova\\Fields\\' . $typeOrFqcn;
 
         return $this;
     }
@@ -121,53 +99,54 @@ trait ProvidesNovaFields
             $this->novaFields['index'] ?? [];
     }
 
-    /**
-     * @param mixed ...$args
-     *
-     * @return \Laravel\Nova\Fields\Field
-     */
-    public function setupNovaField(...$args): Field
-    {
+    /** @var null|\Laravel\Nova\Fields\Field|\FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition */
+    protected $novaField;
 
+    /**
+     * @param null|\Laravel\Nova\Fields\Field|\FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition $field
+     */
+    public function setNovaField($field): self
+    {
+        $this->novaField = $field;
+
+        return $this;
     }
 
     /**
-     * @param null|\Laravel\Nova\Fields\Field $field
-     * @param null|string $page 'index', 'details', 'create', 'update'
+     * @return null|\Laravel\Nova\Fields\Field
      */
-    public function setNovaField($field, string $page = null): self
+    public function getNovaField(): ?Field
     {
-        if ($page !== null) {
-            $this->novaFields[$page] = $field;
-
-            return $this;
+        if ($this->novaField instanceof NovaFieldDefinition) {
+            $this->novaField = $this->novaField->getFieldInstance();
         }
 
-        if ($field === null) {
-            $this->novaFields = [
-                'index' => null,
-                'details' => null,
-                'create' => null,
-                'update' => null,
-            ];
+        return $this->novaField;
+    }
 
-            return $this;
-        }
+    /** @var null|\Laravel\Nova\Fields\Field|\FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition */
+    protected $novaCreateField;
 
-        // $field is an instance of Field and $page is null
-        if ($field->showOnIndex) {
-            $this->novaFields['index'] = $field;
-        }
-        if ($field->showOnDetail) {
-            $this->novaFields['details'] = $field;
-        }
-        if ($field->showOnCreation) {
-            $this->novaFields['create'] = $field;
-        }
-        if ($field->showOnUpdate) {
-            $this->novaFields['update'] = $field;
-        }
+    /**
+     * @param null|\Laravel\Nova\Fields\Field|\FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition $field
+     */
+    public function setNovaCreateField($field): self
+    {
+        $this->novaCreateField = $field;
 
         return $this;
+    }
+
+    public function getNovaCreateField(): ?Field
+    {
+        if ($this->novaCreateField !== null) {
+            if ($this->novaCreateField instanceof NovaFieldDefinition) {
+                $this->novaCreateField = $this->novaCreateField->getFieldInstance($this->name);
+            }
+
+            return $this->novaCreateField;
+        }
+
+        return $this->getNovaField();
     }
 }

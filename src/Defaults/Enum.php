@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
 use FlorentPoujol\LaravelAttributePresets\BasePreset;
+use FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition;
 
 class Enum extends BasePreset
 {
@@ -38,11 +39,16 @@ class Enum extends BasePreset
      */
     public function setNovaSelectOptions(array $options, bool $displayUsingLabels = true): self
     {
-        $this->setNovaFieldDefinition('options', $options);
+        /** @var \Laravel\Nova\Fields\Select $novaField */
+        $novaField = NovaFieldDefinition::select()
+            ->sortable()
+            ->options($options);
 
         if ($displayUsingLabels) {
-            $this->setNovaFieldDefinition('displayUsingLabels');
+            $novaField->displayUsingLabels();
         }
+
+        $this->setNovaField($novaField);
 
         return $this;
     }

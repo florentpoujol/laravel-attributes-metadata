@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
 use FlorentPoujol\LaravelAttributePresets\BasePreset;
+use FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition;
 
 class FloatingPoint extends BasePreset
 {
@@ -35,12 +36,14 @@ class FloatingPoint extends BasePreset
             ->setValidationRule('min', $boundaries['min'])
             ->setValidationRule('max', $boundaries['max']);
 
-        $this
-            ->setNovaFieldType('number')
-            ->setMinValue($boundaries['min'])
-            ->setMaxValue($boundaries['max'])
-            ->setStep(1 / max(1, $precision[1] * 10)); // 2 => 0.01
-        // the use of max() is a protection against division by zero and gives a step of 1 when precision is 0
+        $this->setNovaField(
+            NovaFieldDefinition::number()
+                ->sortable()
+                ->min($boundaries['min'])
+                ->max($boundaries['max'])
+                ->step(1 / max(1, $precision[1] * 10)) // 2 => 0.01
+                // the use of max() is a protection against division by zero and gives a step of 1 when precision is 0
+        );
     }
 
     protected function getValueBoundariesFromPrecision(array $precision): array

@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
 use FlorentPoujol\LaravelAttributePresets\BasePreset;
+use FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition;
 
 class Boolean extends BasePreset
 {
     public function __construct(bool $defaultValue = null)
     {
         $this->getColumnDefinitions()->setType('boolean');
-        $this->getNovaDefinitions()->setFieldType('boolean')->nullable();
+        $this->setNovaField(NovaFieldDefinition::boolean()->nullable());
         $this->setValidationRule('boolean');
         $this->setCast('boolean');
 
