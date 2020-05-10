@@ -4,70 +4,64 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\PresetTraits;
 
+use FlorentPoujol\LaravelAttributePresets\Definitions\Validation;
+
 trait ProvidesValidation
 {
     /**
-     * Keys are rule name, or Fqcn when they are objects.
-     * Values are full rules (with "arguments" after the semicolon, if any) or instances.
-     *
-     * @var array<string, string|object>
-     */
-    protected $validationRules = [];
-
-    /**
-     * @return array<string|object>
+     * @return array<string|\Illuminate\Validation\Rule>
      */
     public function getValidationRules(): array
     {
-        return array_values($this->validationRules);
+        return $this->getValidationDefinitions()->getRules();
     }
 
-    /**
-     * @param array<string|object> $validationRules
-     */
-    public function setValidationRules(array $validationRules): self
+    public function getValidationMessage(): ?string
     {
-        $this->validationRules = [];
+        return $this->getValidationDefinitions()->getMessage();
+    }
 
-        foreach ($validationRules as $rule) {
-            $this->setValidationRule($rule);
-        }
+    // --------------------------------------------------
+
+    /** @var \FlorentPoujol\LaravelAttributePresets\Definitions\Validation */
+    protected $validationDefinitions;
+
+    /**
+     * @param \FlorentPoujol\LaravelAttributePresets\Definitions\Validation $definitions
+     *
+     * @return static
+     */
+    public function setValidationDefinitions(Validation $definitions)
+    {
+        $this->validationDefinitions = $definitions;
 
         return $this;
     }
 
     /**
-     * @param string|object $rule
-     * @param null|mixed $value
+     * @return \FlorentPoujol\LaravelAttributePresets\Definitions\Validation
      */
-    public function setValidationRule($rule, $value = null): self
+    public function getValidationDefinitions(): Validation
     {
-        if ($value === null) {
-            $value = $rule;
+        if ($this->validationDefinitions === null) {
+            $this->validationDefinitions = new Validation();
         }
 
-        if (is_string($rule) && strpos($rule, ':') !== false) {
-            // for the rules that takes "arguments" after a semicolon like 'exists', or 'in'
-            $rule = explode(':', $rule, 2)[0]; // keep the name
-        } elseif (is_object($rule)) {
-            $rule = get_class($rule);
-        }
-
-        $this->validationRules[$rule] = $value;
-
-        return $this;
+        return $this->validationDefinitions;
     }
 
     /**
-     * @param string|object $rule
+     * Catch the call for the 'validation' key when the base preset itself is filled
+     *
+     * @param array|callable $attributesOrCallback Will fill or tap into the underlying definition instance
+     *
+     * @return static
      */
-    public function removeValidationRule($rule): self
+    public function validation($attributesOrCallback)
     {
-        if (is_object($rule)) {
-            $rule = get_class($rule);
-        }
+        $method = is_callable($attributesOrCallback) ? 'tap' : 'fill';
 
-        unset($this->validationRules[$rule]);
+        $this->getValidationDefinitions()->$method($attributesOrCallback);
 
         return $this;
     }

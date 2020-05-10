@@ -2,108 +2,32 @@
 
 namespace FlorentPoujol\LaravelAttributePresets\PresetTraits;
 
-use FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition;
+use FlorentPoujol\LaravelAttributePresets\Definitions\NovaField;
 use Laravel\Nova\Fields\Field;
 
 trait ProvidesNovaFields
 {
-    protected $indexNovaDefinitions;
-    protected $detailNovaDefinitions;
-    protected $createNovaDefinitions;
-    protected $updateNovaDefinitions;
-
-    public function getIndexNovaDefinitions()
-    {
-        if ($this->indexNovaDefinitions === null) {
-            $this->indexNovaDefinitions = new NovaFieldDefinition();
-        }
-
-        return $this->indexNovaDefinitions;
-    }
-
-    public function getUpdateNovaDefinitions()
-    {
-        return $this->updateNovaDefinitions ?: $this->getIndexNovaDefinitions();
-    }
-
-    public function setIndexNovaDefinitions($defs)
-    {
-        $this->indexNovaDefinitions = $defs;
-    }
-
-
-    /** @var \FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition */
-    protected $novaFieldDefinitions;
-
-    /**
-     * @return \FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition
-     */
-    public function getNovaDefinitions(): NovaFieldDefinition
-    {
-        if ($this->novaFieldDefinitions === null) {
-            $this->novaFieldDefinitions = new NovaFieldDefinition();
-        }
-
-        return $this->novaFieldDefinitions;
-    }
-
-    /** @var array<string, null|\Laravel\Nova\Fields\Field> */
-    protected $novaFields = [
-        'index' => null,
-        'detail' => null,
-        'create' => null,
-        'update' => null,
-    ];
-
-    /** @var string */
-    protected $novaFieldFqcn;
-
-    /** @var array<string, null|mixed|array<mixed>>  */
-    // protected $novaFieldDefinitions = [
-    //     'sortable' => null
-    // ];
-
-    public function setNovaFieldType(string $typeOrFqcn): self
-    {
-
-
-        return $this;
-    }
-
-    /**
-     * @param null|mixed $value
-     */
-    public function setNovaFieldDefinition(string $key, $value = null): self
-    {
-        $this->novaFieldDefinitions[$key] = $value;
-
-        return $this;
-    }
-
-    public function removeNovaFieldDefinition(string $key): self
-    {
-        unset($this->novaFieldDefinitions[$key]);
-
-        return $this;
-    }
-
-    /**
-     * @param null|string $page 'index', 'details', 'create', 'update'
-     *
-     * @return array<\Laravel\Nova\Fields\Field>
-     */
-    public function getNovaFields(string $page = null): array
-    {
-        return
-            $this->novaFields[$page ?: 'index'] ??
-            $this->novaFields['index'] ?? [];
-    }
-
-    /** @var null|\Laravel\Nova\Fields\Field|\FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition */
+    /** @var null|\Laravel\Nova\Fields\Field */
     protected $novaField;
 
     /**
-     * @param null|\Laravel\Nova\Fields\Field|\FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition $field
+     * @return null|\Laravel\Nova\Fields\Field
+     */
+    public function getNovaField(): ?Field
+    {
+        if ($this->novaField === null && $this->novaFieldDefinitions !== null) {
+            $this->novaField = $this->novaFieldDefinitions
+                ->attribute($this->getName())
+                ->getInstance();
+        }
+
+        return $this->novaField;
+    }
+
+    // --------------------------------------------------
+
+    /**
+     * @param null|\Laravel\Nova\Fields\Field $field
      */
     public function setNovaField($field): self
     {
@@ -112,41 +36,44 @@ trait ProvidesNovaFields
         return $this;
     }
 
+    /** @var \FlorentPoujol\LaravelAttributePresets\Definitions\NovaField */
+    protected $novaFieldDefinitions;
+
     /**
-     * @return null|\Laravel\Nova\Fields\Field
+     * @return \FlorentPoujol\LaravelAttributePresets\Definitions\NovaField
      */
-    public function getNovaField(): ?Field
+    public function getNovaFieldDefinitions(): NovaField
     {
-        if ($this->novaField instanceof NovaFieldDefinition) {
-            $this->novaField = $this->novaField->getFieldInstance();
+        if ($this->novaFieldDefinitions === null) {
+            $this->novaFieldDefinitions = new NovaField();
         }
 
-        return $this->novaField;
+        return $this->novaFieldDefinitions;
     }
 
-    /** @var null|\Laravel\Nova\Fields\Field|\FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition */
-    protected $novaCreateField;
-
     /**
-     * @param null|\Laravel\Nova\Fields\Field|\FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition $field
+     * @param \FlorentPoujol\LaravelAttributePresets\Definitions\NovaField $definitions
      */
-    public function setNovaCreateField($field): self
+    public function setNovaFieldDefinitions(NovaField $definitions): self
     {
-        $this->novaCreateField = $field;
+        $this->novaFieldDefinitions = $definitions;
 
         return $this;
     }
 
-    public function getNovaCreateField(): ?Field
+    /**
+     * Catch the call for the 'nova' key when the base preset itself is filled
+     *
+     * @param array|callable $attributesOrCallback Will fill or tap into the underlying definition instance
+     *
+     * @return static
+     */
+    public function nova($attributesOrCallback)
     {
-        if ($this->novaCreateField !== null) {
-            if ($this->novaCreateField instanceof NovaFieldDefinition) {
-                $this->novaCreateField = $this->novaCreateField->getFieldInstance($this->name);
-            }
+        $method = is_callable($attributesOrCallback) ? 'tap' : 'fill';
 
-            return $this->novaCreateField;
-        }
+        $this->getNovaFieldDefinitions()->$method($attributesOrCallback);
 
-        return $this->getNovaField();
+        return $this;
     }
 }

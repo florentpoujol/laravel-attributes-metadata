@@ -7,7 +7,7 @@ namespace FlorentPoujol\LaravelAttributePresets;
 use Illuminate\Database\Schema\Blueprint;
 
 /**
- * @method static getRawAttributePresets(): array Shall be implemented typically in the model class itself
+ * @method static array getRawAttributePresets() Shall be implemented typically in the model class itself
  */
 trait HasAttributePresets
 {
@@ -69,8 +69,8 @@ trait HasAttributePresets
      *
      * @return array<string, array<string|object>> Validation rules (as array) per attribute name
      */
-    public static function getNovaIndexFields($attributes = []): void
+    public static function getNovaFields($attributes = []): array
     {
-        static::getAttributePresetCollection()->getNovaIndexFields($attributes);
+        return static::getAttributePresetCollection()->getNovaFields($attributes);
     }
 }

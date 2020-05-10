@@ -4,30 +4,76 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\PresetTraits;
 
-use FlorentPoujol\LaravelAttributePresets\ColumnDefinition;
+use FlorentPoujol\LaravelAttributePresets\Definitions\DbColumn;
+use Illuminate\Database\Schema\Blueprint;
 
 trait ProvidesColumnDefinitions
 {
-    /** @var \FlorentPoujol\LaravelAttributePresets\ColumnDefinition */
+    /**
+     * @param \Illuminate\Database\Schema\Blueprint $table
+     *
+     * @return static
+     */
+    public function addToTable(Blueprint $table)
+    {
+        if ($this->columnDefinitions !== null) {
+            $this->columnDefinitions
+                ->name($this->getName())
+                ->addToTable($table);
+        }
+
+        return $this;
+    }
+
+    public function hasDbColumn(): bool
+    {
+        return
+            $this->columnDefinitions !== null &&
+            $this->columnDefinitions->has('type');
+    }
+
+    // --------------------------------------------------
+
+    /** @var \FlorentPoujol\LaravelAttributePresets\Definitions\DbColumn */
     protected $columnDefinitions;
 
     /**
-     * @return \FlorentPoujol\LaravelAttributePresets\ColumnDefinition
+     * @param \FlorentPoujol\LaravelAttributePresets\Definitions\DbColumn $definitions
+     *
+     * @return static
      */
-    public function getColumnDefinitions(): ColumnDefinition
+    public function setColumnDefinitions(DbColumn $definitions)
+    {
+        $this->columnDefinitions = $definitions;
+
+        return $this;
+    }
+
+    /**
+     * @return \FlorentPoujol\LaravelAttributePresets\Definitions\DbColumn
+     */
+    public function getColumnDefinitions(): DbColumn
     {
         if ($this->columnDefinitions === null) {
-            $this->columnDefinitions = ColumnDefinition::make($this->name);
+            $this->columnDefinitions = new DbColumn();
         }
 
         return $this->columnDefinitions;
     }
 
-    public function clearColumnDefinitions(): void
+    /**
+     * Catch the call for the 'dbColumn' key when the base preset itself is filled
+     *
+     * @param array|callable $attributesOrCallback Will fill or tap into the underlying definition instance
+     *
+     * @return static
+     */
+    public function dbColumn($attributesOrCallback)
     {
-        if ($this->columnDefinitions !== null) {
-            $this->columnDefinitions->clear();
-            $this->columnDefinitions = null;
-        }
+        $method = is_callable($attributesOrCallback) ? 'tap' : 'fill';
+
+        $this->getColumnDefinitions()->$method($attributesOrCallback);
+
+        return $this;
     }
 }

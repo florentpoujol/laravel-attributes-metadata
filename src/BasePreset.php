@@ -4,20 +4,32 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets;
 
+use FlorentPoujol\LaravelAttributePresets\Definitions\Fluent;
 use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesColumnDefinitions;
+use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesModelMetadata;
 use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesNovaFields;
 use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesValidation;
+use Illuminate\Database\Eloquent\Relations\Relation as BaseLaravelRelation;
 
-class BasePreset
+class BasePreset extends Fluent implements Preset
 {
     use ProvidesValidation;
     use ProvidesColumnDefinitions;
     use ProvidesNovaFields;
+    use ProvidesModelMetadata;
 
     // --------------------------------------------------
 
     /** @var null|string The name of the attribute. Usually set from ModelMetadata->getAttributeMetadata()`. */
     protected $name;
+
+    /**
+     * @return static
+     */
+    public function name(string $name)
+    {
+        return $this->setName($name);
+    }
 
     public function setName(string $name): self
     {
@@ -29,39 +41,6 @@ class BasePreset
     public function getName(): ?string
     {
         return $this->name;
-    }
-
-    // --------------------------------------------------
-
-    /** @var null|string|object */
-    protected $cast;
-
-    /**
-     * @param null|string|object $cast
-     * @param string $value For casts that have values, like decimal or datetime
-     */
-    public function setCast($cast, string $value = null): self
-    {
-        if ($value !== null) {
-            $cast .= ":$value";
-        }
-
-        $this->cast = $cast;
-
-        return $this;
-    }
-
-    public function hasCast(): bool
-    {
-        return $this->cast !== null;
-    }
-
-    /**
-     * @return null|object|string
-     */
-    public function getCast()
-    {
-        return $this->cast;
     }
 
     // --------------------------------------------------
@@ -97,80 +76,25 @@ class BasePreset
         return ['method' => $this->relationMethod, 'parameters' => $this->relationParams];
     }
 
+    public function getRelationInstance(): BaseLaravelRelation
+    {
+        $method = $this->relationMethod;
+
+        return $method(...$this->relationParams);
+    }
+
     public function isRelation(): bool
     {
         return $this->relationMethod !== null;
     }
 
-    // --------------------------------------------------
-
-    protected $isHidden = false;
-
-    public function markHidden(bool $isHidden = true): self
+    public function fillRelation($attributes = [])
     {
-        $this->isHidden = $isHidden;
-
-        if ($isHidden) {
-            $this
-                ->setNovaFieldDefinition('hideFromIndex')
-                ->setNovaFieldDefinition('hideFromDetails');
-        }
-
-        return $this;
+        $attributes['method']
+        $attributes['params']
     }
 
-    public function isHidden(): bool
-    {
-        return $this->isHidden;
-    }
 
-    // --------------------------------------------------
-
-    protected $isGuarded = false;
-
-    public function markGuarded(bool $isGuarded = true): self
-    {
-        $this->isGuarded = $isGuarded;
-
-        return $this;
-    }
-
-    public function isGuarded(): bool
-    {
-        return $this->isGuarded;
-    }
-
-    // --------------------------------------------------
-
-    protected $isFillable = true;
-
-    public function markFillable(bool $isFillable = true): self
-    {
-        $this->isFillable = $isFillable;
-
-        return $this;
-    }
-
-    public function isFillable(): bool
-    {
-        return $this->isFillable;
-    }
-
-    // --------------------------------------------------
-
-    protected $isDate = false;
-
-    public function markDate(bool $isDate = true): self
-    {
-        $this->isDate = $isDate;
-
-        return $this;
-    }
-
-    public function isDate(): bool
-    {
-        return $this->isDate;
-    }
 
     // --------------------------------------------------
 
@@ -267,79 +191,7 @@ class BasePreset
         return $this->isUnsigned;
     }
 
-    // --------------------------------------------------
 
-    /** @var null|mixed */
-    protected $defaultValue;
-
-    /**
-     * @param null|mixed $value
-     */
-    public function setDefaultValue($value, bool $affectDbColumn = false): self
-    {
-        $this->defaultValue = $value;
-
-        if ($affectDbColumn) {
-            $this->getColumnDefinitions()->default($value);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return null|mixed
-     */
-    public function getDefaultValue()
-    {
-        return $this->defaultValue;
-    }
-
-    public function hasDefaultValue(): bool
-    {
-        return $this->defaultValue !== null;
-    }
-
-    // --------------------------------------------------
-
-    protected $isPrimaryKey = false;
-    protected $primaryKeyType = 'int';
-    protected $isIncrementingPrimaryKey = true;
-
-    public function markPrimaryKey(bool $isPrimaryKey = true, string $keyType = 'int', bool $isIncrementing = true): self
-    {
-        $this->isPrimaryKey = $isPrimaryKey;
-        $this->primaryKeyType = $keyType;
-        $this->isIncrementingPrimaryKey = $this->primaryKeyType === 'int' ? $isIncrementing : false;
-
-        if ($this->isPrimaryKey) {
-            $this->getColumnDefinitions()->primary();
-            $this->setNovaFieldType('id');
-        } else {
-            $this->getColumnDefinitions()->removeDefinition('primary');
-            $this->getColumnDefinitions()->removeDefinition('autoIncrement');
-        }
-
-        if ($this->isIncrementingPrimaryKey) {
-            $this->getColumnDefinitions()->autoIncrement();
-        }
-
-        return $this;
-    }
-
-    public function isPrimaryKey(): bool
-    {
-        return $this->isPrimaryKey;
-    }
-
-    public function getPrimaryKeyType(): string
-    {
-        return $this->primaryKeyType;
-    }
-
-    public function isIncrementingPrimaryKey(): bool
-    {
-        return $this->isIncrementingPrimaryKey;
-    }
 
     // --------------------------------------------------
 

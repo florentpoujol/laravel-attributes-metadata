@@ -197,7 +197,17 @@ class Collection extends BaseCollection
         return $this
             ->filterByNames($attributes)
             ->mapWithKeys(function (BasePreset $attr, string $attrName) {
-                return [$attrName, $attr->getValidationRules()];
+                return [$attrName => $attr->getValidationRules()];
+            })
+            ->toArray();
+    }
+
+    public function getValidationMessages($attributes = []): array
+    {
+        return $this
+            ->filterByNames($attributes)
+            ->mapWithKeys(function (BasePreset $attr, string $attrName) {
+                return [$attrName => $attr->getValidationMessage()];
             })
             ->toArray();
     }
@@ -212,9 +222,7 @@ class Collection extends BaseCollection
         $this
             ->filterByNames($attributes)
             ->each(function (BasePreset $attr) use ($table) {
-                $attr
-                    ->getColumnDefinitions()
-                    ->addToTable($table);
+                $attr->addToTable($table);
             });
     }
 

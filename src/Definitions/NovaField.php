@@ -1,9 +1,11 @@
 <?php
 
-namespace FlorentPoujol\LaravelAttributePresets;
+declare(strict_types=1);
 
-use FlorentPoujol\LaravelAttributePresets\Defaults\Boolean;
-use Illuminate\Support\Fluent;
+namespace FlorentPoujol\LaravelAttributePresets\Definitions;
+
+use Illuminate\Support\Str;
+use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Fields\Code;
 use Laravel\Nova\Fields\Date;
 use Laravel\Nova\Fields\DateTime;
@@ -12,16 +14,88 @@ use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Fields\Textarea;
+use function array_merge;
+use function strpos;
+use function ucfirst;
 
 /**
  * @mixin \Laravel\Nova\Fields\Field
+ *
+ * @method $this name(string $name)
+ * @method $this attribute(string $attrName)
+ * @method $this resource(string $resourceFqcn)
  */
-class NovaFieldDefinition extends Fluent
+class NovaField extends Fluent
 {
     // An important bit to remember is that Nova may not be installed on the user's
     // project, so we must *not* use any of Nova classes here, at least outside PHPDocs.
     // That's why we use here a class extending the Fluent one, pretty much like for
     // the DB column definitions
+
+    /**
+     * @param string $type The type of the field as a shorthand or an Fqcn
+     *
+     * @return static
+     */
+    public function type(string $type)
+    {
+        if (strpos($type, '\\') !== false) {
+            $this->attributes['type'] = $type;
+
+            return $this;
+        }
+
+        $type = ucfirst($type);
+        switch ($type) {
+            case 'Id':
+                $type = 'ID';
+                break;
+            case 'String':
+                $type = 'Text';
+                break;
+            case 'Json':
+                $type = 'Code';
+                break;
+            case 'Datetime':
+            case 'Timestamp':
+                $type = 'DateTime';
+                break;
+        }
+
+        $this->attributes['type'] = '\\Laravel\\Nova\\Fields\\' . $type;
+
+        return $this;
+    }
+
+    /**
+     * @return null|\Laravel\Nova\Fields\Field
+     */
+    public function getInstance(): ?Field
+    {
+        $type = $this->get('type');
+        $attribute = $this->get('attribute');
+        if ($type === null || $attribute === null) {
+            return null;
+        }
+
+        $name = $this->get('name');
+        if ($name === null) {
+            $name = Str::studly($attribute);
+        }
+
+        /** @var \Laravel\Nova\Fields\Field $field */
+        $field = new $type(
+            $name,
+            $attribute,
+            $this->get('resource') // only useful for relationship fields
+        );
+
+        $this->applyTo($field, ['type', 'name', 'attribute', 'resource']);
+
+        return $field;
+    }
+
+    // --------------------------------------------------
 
     /**
      * @param string $type The Fqcn or base class name of the field
@@ -32,92 +106,6 @@ class NovaFieldDefinition extends Fluent
     {
         return new static(['type' => $type]);
     }
-
-    public function offsetSet($offset, $value): void
-    {
-        if ($offset === 'type') {
-            if (strpos($offset, '\\') !== false) {
-                $this->attributes['type'] = $offset;
-
-                return;
-            }
-
-            $offset = ucfirst($offset);
-            switch ($offset) {
-                case 'Id':
-                    $offset = 'ID';
-                    break;
-                case 'String':
-                    $offset = 'Text';
-                    break;
-                case 'Json':
-                    $offset = 'Code';
-                    break;
-                case 'Datetime':
-                case 'Timestamp':
-                    $offset = 'DateTime';
-                    break;
-            }
-
-            $this->attributes['type'] = '\\Laravel\\Nova\\Fields\\' . $offset;
-
-            return;
-        }
-
-        parent::offsetSet($offset, $value);
-    }
-
-    /**
-     * @param array<string|callable> ...$constructorParams
-     * @return \Laravel\Nova\Fields\Field
-     */
-    public function getFieldInstance(...$constructorParams): Field
-    {
-        $type = $this->attributes['type'] ?? null;
-        if ($type === null) {
-            throw new \LogicException();
-        }
-
-        /** @var \Laravel\Nova\Fields\Field $field */
-        $field = new $type(...$constructorParams);
-
-        foreach ($this->attributes as $method => $args) {
-            if ($method === 'type') {
-                continue;
-            }
-
-            if ($args === null) {
-                $args = [];
-            } elseif (! is_array($args)) {
-                $args = [$args];
-            }
-
-            $field->$method(...$args);
-        }
-
-        return $field;
-    }
-
-    public function removeDefinition(string $key): self
-    {
-        $this->offsetUnset($key);
-
-        return $this;
-    }
-
-    public function clear(): void
-    {
-        $this->attributes = [];
-    }
-
-    public function __call($method, $parameters)
-    {
-        $this->attributes[$method] = empty($parameters) ? null : $parameters; // allow to store multiple parameters
-
-        return $this;
-    }
-
-    // --------------------------------------------------
 
     /**
      * @return static&\Laravel\Nova\Fields\Boolean
