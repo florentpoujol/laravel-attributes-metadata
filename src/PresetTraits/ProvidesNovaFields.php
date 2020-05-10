@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FlorentPoujol\LaravelAttributePresets\PresetTraits;
 
 use FlorentPoujol\LaravelAttributePresets\Definitions\NovaField;
@@ -22,6 +24,16 @@ trait ProvidesNovaFields
         }
 
         return $this->novaField;
+    }
+
+    public function hasNovaField(): bool
+    {
+        return
+            $this->novaField !== null ||
+            (
+                $this->novaFieldDefinitions !== null &&
+                $this->novaFieldDefinitions->has('type')
+            );
     }
 
     // --------------------------------------------------
@@ -70,10 +82,12 @@ trait ProvidesNovaFields
      */
     public function nova($attributesOrCallback)
     {
-        $method = is_callable($attributesOrCallback) ? 'tap' : 'fill';
+        $method = \is_callable($attributesOrCallback) ? 'tap' : 'fill';
 
         $this->getNovaFieldDefinitions()->$method($attributesOrCallback);
 
         return $this;
     }
+
+
 }

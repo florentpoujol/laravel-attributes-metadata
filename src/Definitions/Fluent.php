@@ -122,8 +122,13 @@ class Fluent extends \Illuminate\Support\Fluent
             return $this->get(lcfirst(substr($method, 3)));
         }
 
-        if (strpos($method, 'has') === 0 || strpos($method, 'is') === 0) {
+        if (strpos($method, 'has') === 0) {
             return $this->has(lcfirst(substr($method, 3)));
+        }
+
+        if (strpos($method, 'is') === 0) {
+            // returns true for any non-false value (including null)
+            return $this->get(lcfirst(substr($method, 2)), false) !== false;
         }
 
         $this->offsetSet($method, $parameters);

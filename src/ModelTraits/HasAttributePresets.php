@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
-namespace FlorentPoujol\LaravelAttributePresets;
+namespace FlorentPoujol\LaravelAttributePresets\ModelTraits;
 
+use FlorentPoujol\LaravelAttributePresets\BasePreset;
+use FlorentPoujol\LaravelAttributePresets\Collection;
 use Illuminate\Database\Schema\Blueprint;
 
 /**
@@ -57,7 +59,16 @@ trait HasAttributePresets
     /**
      * @param string|array<string> $attributes One or several attribute names to restrict the results to
      *
-     * @return array<string, array<string|object>> Validation rules (as array) per attribute name
+     * @return array<string, null|string> Validation message per attribute name
+     */
+    public static function getValidationMessages($attributes = []): array
+    {
+        return static::getAttributePresetCollection()->getValidationMessages($attributes);
+    }
+
+    /**
+     * @param \Illuminate\Database\Schema\Blueprint $table
+     * @param string|array<string> $attributes One or several attribute names to restrict the results to
      */
     public static function addColumnsToTable(Blueprint $table, $attributes = []): void
     {

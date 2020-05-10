@@ -192,6 +192,9 @@ class Collection extends BaseCollection
             });
     }
 
+    /**
+     * @return array<string, array<string|\Illuminate\Validation\Rule>>
+     */
     public function getValidationRules($attributes = []): array
     {
         return $this
@@ -202,6 +205,9 @@ class Collection extends BaseCollection
             ->toArray();
     }
 
+    /**
+     * @return array<string, null|string>
+     */
     public function getValidationMessages($attributes = []): array
     {
         return $this
@@ -214,8 +220,6 @@ class Collection extends BaseCollection
 
     /**
      * @param string|array<string> $attributes One or several attribute names to restrict the results to
-     *
-     * @return array<string, array<string|object>> Validation rules (as array) per attribute name
      */
     public function addColumnsToTable(Blueprint $table, $attributes = []): void
     {
@@ -226,16 +230,20 @@ class Collection extends BaseCollection
             });
     }
 
-    public function getNovaIndexFields($attributes = [])
+    /**
+     * @return array<string, \Laravel\Nova\Fields\Field>
+     */
+    public function getNovaFields($attributes = []): array
     {
         return $this
             ->filterByNames($attributes)
             ->keep(function (BasePreset $attr) {
-                return $this->hasIndexNovaField();
+                return $attr->hasNovaField();
             })
             ->mapWithKeys(function (BasePreset $attr, string $attrName) {
-                return [$attrName => $attr->getNovaIndexField()];
-            });
+                return [$attrName => $attr->getNovaField()];
+            })
+            ->toArray();
     }
 
     /**

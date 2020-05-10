@@ -6,86 +6,27 @@ namespace FlorentPoujol\LaravelAttributePresets\PresetTraits;
 
 /**
  * @method $this cast(string $cast, $value = null)
- * @method ?string getCast()
+ * @method null|string getCast()
  * @method bool hasCast()
  *
+ * @method $this fillable(bool $fillable = true)
+ * @method bool isFillable()
+ *
+ * @method $this guarded(bool $guarded = true)
+ * @method bool isGuarded()
+ *
+ * @method $this hidden(bool $hidden = true)
+ * @method bool isHidden()
+ *
+ * @method $this date(bool $date = true)
+ * @method bool isDate()
+ *
  * @method $this default(mixed $value)
- * @method $this getDefault(mixed $value)
- * @method $this hasDefault(mixed $value)
+ * @method $this getDefaultValue(mixed $value)
+ * @method $this hasDefaultValue(mixed $value)
  */
 trait ProvidesModelMetadata
 {
-    // --------------------------------------------------
-
-    protected $isHidden = false;
-
-    public function markHidden(bool $isHidden = true): self
-    {
-        $this->isHidden = $isHidden;
-
-        if ($isHidden) {
-            $this
-                ->getNovaField()
-                ->setNovaFieldDefinition('hideFromIndex')
-                ->setNovaFieldDefinition('hideFromDetails');
-        }
-
-        return $this;
-    }
-
-    public function isHidden(): bool
-    {
-        return $this->isHidden;
-    }
-
-    // --------------------------------------------------
-
-    protected $isGuarded = false;
-
-    public function markGuarded(bool $isGuarded = true): self
-    {
-        $this->isGuarded = $isGuarded;
-
-        return $this;
-    }
-
-    public function isGuarded(): bool
-    {
-        return $this->isGuarded;
-    }
-
-    // --------------------------------------------------
-
-    protected $isFillable = true;
-
-    public function markFillable(bool $isFillable = true): self
-    {
-        $this->isFillable = $isFillable;
-
-        return $this;
-    }
-
-    public function isFillable(): bool
-    {
-        return $this->isFillable;
-    }
-
-    // --------------------------------------------------
-
-    protected $isDate = false;
-
-    public function markDate(bool $isDate = true): self
-    {
-        $this->isDate = $isDate;
-
-        return $this;
-    }
-
-    public function isDate(): bool
-    {
-        return $this->isDate;
-    }
-
     // --------------------------------------------------
 
     /** @var null|mixed */
@@ -103,19 +44,6 @@ trait ProvidesModelMetadata
         }
 
         return $this;
-    }
-
-    /**
-     * @return null|mixed
-     */
-    public function getDefaultValue()
-    {
-        return $this->defaultValue;
-    }
-
-    public function hasDefaultValue(): bool
-    {
-        return $this->defaultValue !== null;
     }
 
     // --------------------------------------------------

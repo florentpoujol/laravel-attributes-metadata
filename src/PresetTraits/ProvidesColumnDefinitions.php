@@ -70,7 +70,7 @@ trait ProvidesColumnDefinitions
      */
     public function dbColumn($attributesOrCallback)
     {
-        $method = is_callable($attributesOrCallback) ? 'tap' : 'fill';
+        $method = \is_callable($attributesOrCallback) ? 'tap' : 'fill';
 
         $this->getColumnDefinitions()->$method($attributesOrCallback);
 

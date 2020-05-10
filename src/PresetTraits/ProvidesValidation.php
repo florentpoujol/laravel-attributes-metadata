@@ -59,7 +59,7 @@ trait ProvidesValidation
      */
     public function validation($attributesOrCallback)
     {
-        $method = is_callable($attributesOrCallback) ? 'tap' : 'fill';
+        $method = \is_callable($attributesOrCallback) ? 'tap' : 'fill';
 
         $this->getValidationDefinitions()->$method($attributesOrCallback);
 

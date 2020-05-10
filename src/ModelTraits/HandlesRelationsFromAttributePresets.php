@@ -8,7 +8,7 @@ namespace FlorentPoujol\LaravelAttributePresets\ModelTraits;
  * To be added on model classes that have relations defined in their presets.
  *
  * @mixin \Illuminate\Database\Eloquent\Model
- * @mixin \FlorentPoujol\LaravelAttributePresets\HasAttributePresets
+ * @mixin \FlorentPoujol\LaravelAttributePresets\ModelTraits\HasAttributePresets
  */
 trait HandlesRelationsFromAttributePresets
 {
@@ -23,7 +23,7 @@ trait HandlesRelationsFromAttributePresets
             return $this->relations[$key];
         }
 
-        if (method_exists($this, $key)) {
+        if (\method_exists($this, $key)) {
             return $this->getRelationshipFromMethod($key);
         }
 
@@ -33,8 +33,7 @@ trait HandlesRelationsFromAttributePresets
         $preset = static::getAttributePreset($key);
         if (
             $preset !== null &&
-            $preset->isRelation() &&
-            $preset->getRelation()['method'] === $key
+            $preset->getRelationMethod() === $key
         ) {
             // will call the relation method which will be catched by __call() below
             return $this->getRelationshipFromMethod($key);
@@ -47,10 +46,7 @@ trait HandlesRelationsFromAttributePresets
     {
         $preset = static::getAttributePreset($method);
         if ($preset !== null && $preset->isRelation()) {
-            $relation = $preset->getRelation();
-
-            // $relation['method'] is 'belongsTo', 'hasMany', etc...
-            return $this->$relation['method'](...$relation['parameters']);
+            return $preset->getRelationInstance();
         }
 
         return parent::__call($method, $arguments);

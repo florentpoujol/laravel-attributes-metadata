@@ -8,7 +8,7 @@ namespace FlorentPoujol\LaravelAttributePresets\ModelTraits;
  * To be added on model classes that have relations defined in their preset.
  *
  * @mixin \Illuminate\Database\Eloquent\Model
- * @mixin \FlorentPoujol\LaravelAttributePresets\HasAttributePresets
+ * @mixin \FlorentPoujol\LaravelAttributePresets\ModelTraits\HasAttributePresets
  */
 trait SetupModelFromAttributePresets
 {
