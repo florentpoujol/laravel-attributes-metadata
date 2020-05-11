@@ -74,9 +74,6 @@ class Fluent extends \Illuminate\Support\Fluent
         return $this;
     }
 
-    /** @var array<string> Whitelist of the actual properties on the object that can be set from offsetSet() method (and the others that call it) */
-    protected $fillableProperties = [];
-
     /**
      * @param int|string|object $offset
      * @param mixed $value

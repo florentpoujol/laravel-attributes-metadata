@@ -62,6 +62,14 @@ class Validation extends Fluent
             // the keys is the rule name
         }
 
+        if (is_array($value)) {
+            $value = implode(',', $value);
+        }
+
+        if (is_string($value) && strpos($value, $offset) !== 0) {
+            $value = "$offset:$value";
+        }
+
         parent::offsetSet($offset, $value);
     }
 

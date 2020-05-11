@@ -40,8 +40,7 @@ class PostModel extends LaravelBaseModel
             'meta' => (new Json())->setDefault('{}')->setCast('array'),
 
             // relations can also be defined this way
-            'user_id' => (new Integer())->dbColumn(fn $columnDef => $columnDef->index()),
-            'user' => new BelongsTo(User::class),
+            'user' => new BelongsTo(User::class, true),
 
             'comments' => new HasMany([Comment::class, 'post_foreign']),
 
@@ -173,7 +172,7 @@ Of course you can still access them both as a method -that return a Relationship
 
 ## Example presets
 
-You will finnd in the `Examples` folder already-built and flexible preset for a variety of common use cases.
+The `Examples` folder contain already-built and flexible preset for a variety of common use cases.
 
 You *may* built your own preset by extending these one, but we do not recommand it.
 They are here solely as example, for use in the example project and for tests, we make not promise to not introduce a breaking change, even during a pakcage minor version bump.
@@ -193,16 +192,126 @@ Beside the interface or even the base preset class, you are free to organize you
 Typically each classes represent either a **type** of attribute (that usually follow a type of field in the database), or a **usage** like a VAT attribute, or relations.  
 
 
+### Fluent class
+
+The package makes havy use a Fluent class that extends Laravel's base one.
+
+You can see the class as a practical way to work with an associative array, or to "store" method calls and their arguments to be reapplied later to an instance of another class.
+
+The Preset implementation itself, as well as the definition classes for the DB column, validation rules and Nova field all extend that class.
 
 
+### Column definitions
+
+On a preset instance, calling `getColumnDefinitions(): DbColumn` return an instance of `DbColumn` which you can use pretty much as you would for Laravel's built-in `ColumnDefinitions` in the migrations.
+
+But you can also set the type of the field by calling on it the same methods you would on a `Blueprint` instance, but without the attribute name.
+
+Examples:
+```php
+Post extends BasePreset
+{
+    public function __construct()
+    {
+        $this->getColumnDefinitions()
+            ->string(50)
+            ->nullable()
+            ->index();
+
+        $this->getColumnDefinitions()
+            ->unsignedInteger()
+            ->autoIncrement();
+
+        $this->getColumnDefinitions()
+            ->timestamp()
+            ->precision(2)
+            ->useCurrent();
+    }
+}
+```
+
+Note that you can only call the methods from the Blueprint class that denote a type of field.
+Helpers like `timestamps()`, that actually sets two datetimes do not work.
 
 
+### Validation rules and message
+
+In a similar fashion as for the column definitions, calling `getValidationDefinitions(): Validation` return a fluent instance on which each method calls are turned into a validation rule.
+
+Examples:
+```php
+Post extends BasePreset
+{
+    public function __construct()
+    {
+        $this->getValidationDefinitions()
+
+            // all validations rules are supported but only the few "main" ones have PHPDocs and will autocomplete in PHPStorm
+            ->required()
+            ->alpha_dash()
+            ->in(['foo', 'bar'])
+            
+            // rules objects can be added via the add method
+            ->add(new Rule())
+
+            // validation message can be set via the message method
+            ->message('The :attribute is wrong !'); 
+
+            // rules can also be added via the set() or add() method
+            // the 3 following calls are have the same effect
+            ->min(5)
+            ->set('min', 5)
+            ->add('min:5');
+
+            // and if needed you can remove alredy set rules
+            ->remove('min')
+            ->remove(new Rule())
+            ->remove(Rule::class);
+    }
+}
+```
 
 
+### Nova field definitions
 
+For Nova field you can directly set and work with an instance of an actual Nova field, via the `setNovaField()` / `getNovaField()` methods.
 
+But as before, calling `getNovaFieldDefinitions(): NofaField` return a fluent instance that you can setup exactly like an actual field.
 
+Examples:
+```php
+Post extends BasePreset
+{
+    public function __construct()
+    {
+        $this->getNovaFieldDefinitions()
 
+            // the type of field can be set via common shorthand
+            // or by passing the Fqcn of a field
+            ->type('json') // Code
+            ->type(Select::class)
+
+            // if not set, the "nice" name will be guessed from the attribute name (that itself is set automatically when the field is resolved from the definitions)
+            ->name('Is requied')
+
+            // for realtionship field
+            ->resource(PostResource::class)
+
+            // + all the usual methods
+            ->sortable()
+            ->searchable()
+            ->rules('required', 'min:5')
+            ->hideFromIndex();
+
+        // The definitions class has several static factories that return an instance with the type already set and the PHPDoc that includes the definitions of that type of field
+
+        $definitions = NovaField::date() // @return static&\Laravel\Nova\Fields\Date
+                            ->format('...')
+    }
+}
+```
+
+/!\ The package currently do not support setting several fields for the same attribute.
 
 
 ## Advanced
@@ -381,3 +490,16 @@ $def->type('string')->length(50)
 $def->string(50)
 
 ```
+
+
+
+
+TODO
+
+- only one preset for relations that also have a db field, must set both db field name and relation name
+- support setting foreign key constraints on column definitions
+- for validation rules with a list of arguments, support passing them as array
+- add full autocomplete for validation rules via PHPDoc on a trait or interface
+- artisan command to synchronise definitions of model metadata and relations with the models
+
+
