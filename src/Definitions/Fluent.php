@@ -124,8 +124,7 @@ class Fluent extends \Illuminate\Support\Fluent
         }
 
         if (strpos($method, 'is') === 0) {
-            // returns true for any non-false value (including null)
-            return $this->get(lcfirst(substr($method, 2)), false) !== false;
+            return $this->is(lcfirst(substr($method, 2)));
         }
 
         $this->offsetSet($method, $parameters);
@@ -162,11 +161,21 @@ class Fluent extends \Illuminate\Support\Fluent
     }
 
     /**
-     * @param string|object $key
+     * @param string $key
      */
     public function has($key): bool
     {
         return array_key_exists($key, $this->attributes);
+    }
+
+    /**
+     * @param string $key
+     *
+     * @return bool Returns `true` if the key exists and isn't false
+     */
+    public function is($key): bool
+    {
+        return $this->get($key, false) !== false;
     }
 
     /**
