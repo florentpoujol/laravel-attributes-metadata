@@ -43,4 +43,26 @@ class BasePreset extends Fluent implements Preset
     {
         return $this->name;
     }
+
+    public function toArray()
+    {
+        $attributes = $this->attributes;
+        $attributes['name'] = $this->getName();
+
+        $attributes['dbColumn'] = $this->getColumnDefinitions()->toArray();
+        $attributes['validation'] = $this->getValidationDefinitions()->toArray();
+        $attributes['novaField'] = $this->getNovaFieldDefinitions()->toArray();
+
+        return $attributes;
+    }
+
+    public function hasGetMutator(): bool
+    {
+        return method_exists($this, 'get');
+    }
+
+    public function hasSetMutator(): bool
+    {
+        return method_exists($this, 'set');
+    }
 }
