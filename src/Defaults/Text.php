@@ -5,31 +5,49 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
 use FlorentPoujol\LaravelAttributePresets\BasePreset;
-use FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition;
 
 class Text extends BasePreset
 {
+    protected static $baseDefinitions = [
+        'dbColumn' => ['type' => 'text'],
+        'novaField' => ['Textarea'],
+    ];
+
     /**
-     * @param string $size 'text', 'medium' or 'long'
+     * @param string $type 'text', 'medium' or 'long'
      */
-    public function __construct(string $size = 'text')
+    public function __construct(string $type = 'text')
     {
-        switch (strtolower($size)) {
-            case 'long':
-            case 'longtext':
-                $size = 'longText';
+        $defs = static::getBaseDefinitions();
+
+        // reference for max storage
+        // https://dev.mysql.com/doc/refman/5.7/en/storage-requirements.html#data-types-storage-reqs-strings
+        switch (strtolower($type)) {
+            case 'tiny':
+            case 'tinytext':
+                $type = 'tinyText';
+                $max = 2**8;
+                break;
+            case 'text':
+            default:
+                $type = 'text';
+                $max = 2**16;
                 break;
             case 'medium':
             case 'mediumtext':
-                $size = 'mediumText';
+                $type = 'mediumText';
+                $max = 2**24;
                 break;
-            default:
-                $size = 'text';
+            case 'long':
+            case 'longtext':
+                $type = 'longText';
+                $max = 2**32;
                 break;
         }
 
-        $this->getColumnDefinitions()->setType($size);
+        $defs['dbColumn']['type'] = $type;
+        $defs['validation'] = ['string', 'max' => $max];
 
-        $this->setNovaField(NovaFieldDefinition::textarea());
+        $this->fill($defs);
     }
 }

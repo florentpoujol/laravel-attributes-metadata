@@ -5,37 +5,32 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
 use FlorentPoujol\LaravelAttributePresets\BasePreset;
-use FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition;
 
 class DateTime extends BasePreset
 {
+    protected static $baseDefinitions = [
+        'dbColumn' => ['timestamp', 'useCurrent'],
+        'validation' => ['datetime'],
+        'novaField' => ['DateTime', 'sortable'],
+        'cast' => 'datetime',
+        'date',
+    ];
+
     /**
      * @param string $type 'timestamp', 'datetime' or 'date'
      */
     public function __construct(string $type = 'timestamp', int $precision = null)
     {
-        $this->markDate(true);
+        parent::__construct();
 
-        $params = $precision ? [$precision] : [];
-        $this->getColumnDefinitions()
-            ->setType($type, ...$params)
-            ->useCurrent();
-
-        $novaField = NovaFieldDefinition::datetime();
-        if ($type === 'date') {
-            $novaField = NovaFieldDefinition::date();
+        $defs = ['type' => $type];
+        if ($precision !== null) {
+            $defs['precision'] = $precision;
         }
+        $this->dbColumn($defs);
 
-        $this->setNovaField($novaField);
-    }
-
-    /**
-     * @param string $format Moment.js format (not PHP format)
-     */
-    public function setNovaDisplayFormat(string $format): self
-    {
-        $this->setNovaFieldDefinition('format', $format);
-
-        return $this;
+        if ($type === 'date') {
+            $this->novaField(['type' => 'date']);
+        }
     }
 }

@@ -26,9 +26,10 @@ class Set extends BasePreset
     {
         $this->allowedValues = $values;
 
-        $this->getColumnDefinitions()->setType('set', $values);
+        $this->dbColumn(['set' => $values]);
+        $this->validation(['in' => $values]);
 
-        $this->setValidationRule('in', $values);
+        // TODO: add a special getter/setter to work with Nova boolean group fields
 
         return $this;
     }

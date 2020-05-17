@@ -5,45 +5,53 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
 use FlorentPoujol\LaravelAttributePresets\BasePreset;
-use FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition;
 
 class FloatingPoint extends BasePreset
 {
+    protected static $baseDefinitions = [
+        'dbColumn' => ['float'],
+        'validation' => ['float'],
+        'novaField' => ['Number', 'step' => 0.1],
+    ];
+
     /**
      * @param array<int> $precision An array of two integers, the first is the total number of digits and the second one the number of decimal places after the coma.
      */
     public function __construct(string $type = 'float', array $precision = [8, 2], bool $isUnsigned = false)
     {
-        $columnDef = $this->getColumnDefinitions()->setType($type, $precision);
+        parent::__construct();
+
+        $this->dbColumn([$type => $precision]);
 
         switch ($type) {
             case 'float':
             case 'double':
-                $this->setCast('float');
-                $this->setValidationRule('float');
+                $this->cast('float');
+                $this->validation(['float']);
                 break;
+
             case 'decimal':
-                $this->setCast('decimal', $precision[1]);
+                $this->cast('decimal', $precision[1]);
                 break;
         }
 
         if ($isUnsigned) {
-            $columnDef->unsigned();
+            $this->dbColumn(['unsigned']);
         }
 
         $boundaries = $this->getValueBoundariesFromPrecision($precision);
-        $this
-            ->setValidationRule('min', $boundaries['min'])
-            ->setValidationRule('max', $boundaries['max']);
+        $this->validation([
+            'min' => $boundaries['min'],
+            'max' => $boundaries['max'],
+        ]);
 
-        $this->setNovaField(
-            NovaFieldDefinition::number()
-                ->sortable()
-                ->min($boundaries['min'])
-                ->max($boundaries['max'])
-                ->step(1 / max(1, $precision[1] * 10)) // 2 => 0.01
-                // the use of max() is a protection against division by zero and gives a step of 1 when precision is 0
-        );
+        $this->novaField([
+            'number', 'sortable',
+            'min' => $boundaries['min'],
+            'max' => $boundaries['max'],
+            'step' => 1 / max(1, $precision[1] * 10), // 2 => 0.01
+            // the use of max() is a protection against division by zero and gives a step of 1 when precision is 0
+        ]);
     }
 
     protected function getValueBoundariesFromPrecision(array $precision): array

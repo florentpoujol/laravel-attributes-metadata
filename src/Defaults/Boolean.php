@@ -5,19 +5,22 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelAttributePresets\Defaults;
 
 use FlorentPoujol\LaravelAttributePresets\BasePreset;
-use FlorentPoujol\LaravelAttributePresets\NovaFieldDefinition;
 
 class Boolean extends BasePreset
 {
+    protected static $baseDefinitions = [
+        'dbColumn' => ['boolean', 'default' => false],
+        'validation' => ['boolean'],
+        'novaField' => ['Boolean', 'sortable', 'nullable'],
+        'cast' => 'boolean',
+    ];
+
     public function __construct(bool $defaultValue = null)
     {
-        $this->getColumnDefinitions()->setType('boolean');
-        $this->setNovaField(NovaFieldDefinition::boolean()->nullable());
-        $this->setValidationRule('boolean');
-        $this->setCast('boolean');
-
         if ($defaultValue !== null) {
-            $this->setDefaultValue($defaultValue, true);
+            static::$baseDefinitions['dbColumn']['default'] = $defaultValue;
         }
+
+        parent::__construct();
     }
 }

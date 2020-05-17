@@ -6,6 +6,12 @@ namespace FlorentPoujol\LaravelAttributePresets\Defaults\Relations;
 
 class HasOne extends Relation
 {
+    protected static $baseDefinitions = [
+        'dbColumn' => ['clear'],
+        'novaField' => ['HasOne'],
+        'relation' => ['hasOne'],
+    ];
+
     /**
      * @param string|array $relationParams The FQCN of the related model, or a array with all the arguments that you would pass to the model's hasOne() method
      */
