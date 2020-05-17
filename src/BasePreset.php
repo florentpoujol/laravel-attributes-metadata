@@ -21,6 +21,24 @@ class BasePreset extends Fluent implements Preset
     use ProvidesRelations;
     use Helpers;
 
+    /** @var array */
+    protected static $baseDefinitions = [];
+
+    public static function getBaseDefinitions(): array
+    {
+        return static::$baseDefinitions;
+    }
+
+    public function __construct(array $attributes = [])
+    {
+        $baseDefinitions = static::getBaseDefinitions();
+        if (! empty($baseDefinitions)) {
+            $this->fill($baseDefinitions);
+        }
+
+        parent::__construct($attributes);
+    }
+
     /** @var null|string The name of the attribute. Usually set from ModelMetadata->getAttributeMetadata()`. */
     protected $name;
 
