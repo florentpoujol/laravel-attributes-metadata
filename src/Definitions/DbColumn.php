@@ -30,11 +30,13 @@ use function method_exists;
  * @mixin \Illuminate\Database\Schema\ColumnDefinition
  * @mixin \Illuminate\Database\Schema\Blueprint
  *
- * @method $this type(string $type) Sets the column type
+ * @method $this type(string $type, ...$args) Sets the column type
  * @method $this name(string $name) Sets the column name
  */
 class DbColumn extends Fluent
 {
+    use BlueprintFieldTypePHPDocs;
+
     public function __call($method, $parameters = [])
     {
         if (method_exists(Blueprint::class, $method)) {
@@ -76,6 +78,8 @@ class DbColumn extends Fluent
         if (! $this->has('type')) {
             return;
         }
+
+        // TODO get attribute name
 
         $table->addColumn('', '', $this->toArray());
     }

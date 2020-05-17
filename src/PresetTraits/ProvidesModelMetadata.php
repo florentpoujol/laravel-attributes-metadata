@@ -48,11 +48,7 @@ trait ProvidesModelMetadata
 
     // --------------------------------------------------
 
-    protected $isPrimaryKey = false;
-    protected $primaryKeyType = 'int';
-    protected $isIncrementingPrimaryKey = true;
-
-    public function markPrimaryKey(bool $isPrimaryKey = true, string $keyType = 'int', bool $isIncrementing = true): self
+    public function primaryKey(bool $isPrimaryKey = true, string $keyType = 'int', bool $isIncrementing = true): self
     {
         $this->isPrimaryKey = $isPrimaryKey;
         $this->primaryKeyType = $keyType;

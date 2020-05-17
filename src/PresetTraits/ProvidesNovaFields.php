@@ -80,7 +80,7 @@ trait ProvidesNovaFields
      *
      * @return static
      */
-    public function nova($attributesOrCallback)
+    public function novaField($attributesOrCallback)
     {
         $method = \is_callable($attributesOrCallback) ? 'tap' : 'fill';
 

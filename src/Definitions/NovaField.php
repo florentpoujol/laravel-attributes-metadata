@@ -124,6 +124,7 @@ class NovaField extends Fluent
     {
         return new static(array_merge($attributes, [
             'type' => Date::class,
+            'sortable' => true,
         ]));
     }
 
@@ -134,6 +135,7 @@ class NovaField extends Fluent
     {
         return new static(array_merge($attributes, [
             'type' => DateTime::class,
+            'sortable' => true,
         ]));
     }
 
@@ -155,7 +157,7 @@ class NovaField extends Fluent
     {
         return new static(array_merge($attributes, [
             'type' => Number::class,
-            'sortable' => null,
+            'sortable' => true,
         ]));
     }
 
