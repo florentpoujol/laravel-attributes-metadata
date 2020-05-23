@@ -157,7 +157,7 @@ class FluentTest extends TestCase
 
         $expected = [
             'key1' => null,
-            'key2:value1' => null,
+            'key2' => 'value1',
             'key3' => null,
         ];
         $this->assertSame($expected, $fluent->toArray());
@@ -218,5 +218,23 @@ class FluentTest extends TestCase
 
         $fluent->clear();
         $this->assertEmpty($fluent->toArray());
+    }
+
+    public function test_offset_set(): void
+    {
+        $fluent = new Fluent();
+
+        $fluent->fill(['min:5']);
+        $fluent->add('whatever:text');
+        $fluent->set('whatever:text,text2');
+
+        $expected = [
+            'min' => '5',
+            'whatever' => 'text,text2',
+        ];
+        $this->assertSame($expected, $fluent->toArray());
+
+        $fluent->fill(['-whatever', '-max']);
+        $this->assertSame(['min' => '5'], $fluent->toArray());
     }
 }

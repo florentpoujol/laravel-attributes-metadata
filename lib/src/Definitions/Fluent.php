@@ -6,6 +6,8 @@ namespace FlorentPoujol\LaravelAttributePresets\Definitions;
 
 use function array_key_exists;
 use function explode;
+use function is_array;
+use function is_int;
 use function is_string;
 use function strpos;
 
@@ -147,7 +149,7 @@ class Fluent extends \Illuminate\Support\Fluent
 
         if (is_string($offset)) {
             // eg: "-min"
-            if (strpos('-', $offset) === 0) {
+            if (strpos($offset, '-') === 0) {
                 $this->offsetUnset($offset);
                 $this->offsetUnset(substr($offset, 1));
 
@@ -155,7 +157,7 @@ class Fluent extends \Illuminate\Support\Fluent
             }
 
             // eg: "min:5"
-            if (strpos(':', $offset) !== false) {
+            if (strpos($offset, ':') !== false) {
                 [$offset, $value] = explode(':', $offset, 2);
             }
 
