@@ -12,7 +12,7 @@ class Collection extends BaseCollection
     /** @var array<string, \FlorentPoujol\LaravelAttributePresets\BasePreset> Keys are the attribute names */
     protected $items = [];
 
-    /** @var array<string, string|callable|\FlorentPoujol\LaravelAttributePresets\BasePreset> */
+    /** @var array<string, array|string|callable|\FlorentPoujol\LaravelAttributePresets\BasePreset> */
     protected $rawPresets;
 
     /** @var string */
@@ -86,8 +86,10 @@ class Collection extends BaseCollection
 
     /**
      * @param string|array<string> $attributes One or several attribute names to filter the collection with
+     *
+     * @return static<\FlorentPoujol\LaravelAttributePresets\Preset>
      */
-    public function filterByNames($attributes = []): self
+    public function filterByNames($attributes = [])
     {
         if (! is_array($attributes)) {
             $attributes = [$attributes];
@@ -193,6 +195,8 @@ class Collection extends BaseCollection
     }
 
     /**
+     * @param string|array<string> $attributes One or several attribute names to restrict the results to
+     *
      * @return array<string, array<string|\Illuminate\Validation\Rule>>
      */
     public function getValidationRules($attributes = []): array
@@ -206,6 +210,8 @@ class Collection extends BaseCollection
     }
 
     /**
+     * @param string|array<string> $attributes One or several attribute names to restrict the results to
+     *
      * @return array<string, null|string>
      */
     public function getValidationMessages($attributes = []): array
@@ -231,6 +237,8 @@ class Collection extends BaseCollection
     }
 
     /**
+     * @param string|array<string> $attributes One or several attribute names to restrict the results to
+     *
      * @return array<string, \Laravel\Nova\Fields\Field>
      */
     public function getNovaFields($attributes = []): array
@@ -251,7 +259,7 @@ class Collection extends BaseCollection
      *
      * @param callable $callback
      *
-     * @return static
+     * @return static<\FlorentPoujol\LaravelAttributePresets\Preset>
      */
     public function keep(callable $callback)
     {

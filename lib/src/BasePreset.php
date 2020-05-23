@@ -5,25 +5,25 @@ declare(strict_types=1);
 namespace FlorentPoujol\LaravelAttributePresets;
 
 use FlorentPoujol\LaravelAttributePresets\Definitions\Fluent;
-use FlorentPoujol\LaravelAttributePresets\PresetTraits\Helpers;
 use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesColumnDefinitions;
-use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesModelMetadata;
-use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesNovaFields;
-use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesRelations;
 use FlorentPoujol\LaravelAttributePresets\PresetTraits\ProvidesValidation;
 
 class BasePreset extends Fluent implements Preset
 {
     use ProvidesValidation;
     use ProvidesColumnDefinitions;
-    use ProvidesNovaFields;
-    use ProvidesModelMetadata;
-    use ProvidesRelations;
-    use Helpers;
 
-    /** @var array */
+    // use ProvidesNovaFields;
+    // use ProvidesModelMetadata;
+    // use ProvidesRelations;
+    // use Helpers;
+
+    /** @var array<string, mixed> */
     protected static $baseDefinitions = [];
 
+    /**
+     * @return array<string, mixed>
+     */
     public static function getBaseDefinitions(): array
     {
         return static::$baseDefinitions;
@@ -50,7 +50,7 @@ class BasePreset extends Fluent implements Preset
         return $this->setName($name);
     }
 
-    public function setName(string $name): self
+    public function setName(string $name)
     {
         $this->name = $name;
 
@@ -62,6 +62,9 @@ class BasePreset extends Fluent implements Preset
         return $this->name;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray()
     {
         $attributes = $this->attributes;
@@ -69,7 +72,7 @@ class BasePreset extends Fluent implements Preset
 
         $attributes['dbColumn'] = $this->getColumnDefinitions()->toArray();
         $attributes['validation'] = $this->getValidationDefinitions()->toArray();
-        $attributes['novaField'] = $this->getNovaFieldDefinitions()->toArray();
+        // $attributes['novaField'] = $this->getNovaFieldDefinitions()->toArray();
 
         return $attributes;
     }

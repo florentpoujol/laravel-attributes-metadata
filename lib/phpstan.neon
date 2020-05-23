@@ -1,3 +1,15 @@
 parameters:
+    level: max
+    paths:
+        - src
+        - tests
+    excludes_analyse:
+        - src/Defaults
     ignoreErrors:
         - '#Unsafe usage of new static\(\)#'
+        -
+            message: '#Call to an undefined method#'
+            path: tests/FluentTest.php
+        -
+            message: '#Call to an undefined method#'
+            path: src/Collection.php

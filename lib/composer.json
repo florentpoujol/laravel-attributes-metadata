@@ -39,6 +39,6 @@
     "tests": "./vendor/bin/phpunit tests",
     "cs": "./vendor/bin/phpcs",
     "cf": "./vendor/bin/phpcbf",
-    "phpstan": "./vendor/bin/phpstan analyse --autoload-file vendor/autoload.php --level 0 src"
+    "phpstan": "./vendor/bin/phpstan analyse"
   }
 }

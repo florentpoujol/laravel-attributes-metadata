@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\Definitions;
 
-use function get_class;
-use function is_object;
-use function is_string;
-use function strpos;
-use function strtok;
-
 class Validation extends Fluent
 {
     /**
@@ -42,7 +36,7 @@ class Validation extends Fluent
      * @param int|string|\Illuminate\Validation\Rule $offset
      * @param mixed $value
      */
-    public function offsetSet($offset, $value = null): void
+    public function offsetSet($offset, $value = null)
     {
         if (is_int($offset)) {
             $offset = $value;
@@ -52,7 +46,7 @@ class Validation extends Fluent
         if (is_object($offset)) {
             $this->attributes[get_class($offset)] = $offset;
 
-            return;
+            return $this;
         }
 
         if (is_string($offset) && strpos(':', $offset) !== false) {
@@ -70,7 +64,7 @@ class Validation extends Fluent
             $value = "$offset:$value";
         }
 
-        parent::offsetSet($offset, $value);
+        return parent::offsetSet($offset, $value);
     }
 
     /**

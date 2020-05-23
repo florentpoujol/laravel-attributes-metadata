@@ -3,7 +3,6 @@
 namespace FlorentPoujol\LaravelAttributePresets;
 
 use Illuminate\Database\Schema\Blueprint;
-use Laravel\Nova\Fields\Field;
 
 interface Preset
 {
@@ -30,8 +29,8 @@ interface Preset
     /**
      * @return null|\Laravel\Nova\Fields\Field
      */
-    public function getNovaField(): ?Field;
-    public function hasNovaField(): bool;
+    // public function getNovaField(): ?Field;
+    // public function hasNovaField(): bool;
 
     // public function isRelation(): bool;
     // public function getRelationMethod(): ?string;
@@ -51,7 +50,7 @@ interface Preset
     // public function getDefaultValue();
     // public function hasDefaultValue(): bool;
 
-    public function isPrimaryKey(): bool;
-    public function getPrimaryKeyType(): ?string;
-    public function isIncrementingPrimaryKey(): bool;
+    // public function isPrimaryKey(): bool;
+    // public function getPrimaryKeyType(): ?string;
+    // public function isIncrementingPrimaryKey(): bool;
 }

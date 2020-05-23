@@ -53,7 +53,7 @@ trait ProvidesValidation
     /**
      * Catch the call for the 'validation' key when the base preset itself is filled
      *
-     * @param array|callable $attributesOrCallback Will fill or tap into the underlying definition instance
+     * @param array<int|string, mixed>|callable $attributesOrCallback Will fill or tap into the underlying definition instance
      *
      * @return static
      */

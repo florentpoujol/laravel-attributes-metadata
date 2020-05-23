@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\Definitions;
 
-use function array_key_exists;
-use function explode;
-use function is_array;
-use function is_int;
-use function is_string;
-use function strpos;
-
 class Fluent extends \Illuminate\Support\Fluent
 {
     /**
      * @noinspection PhpMissingParentConstructorInspection
      * @noinspection MagicMethodsValidityInspection
+     *
+     * @param array<int|string, mixed> $attributes
      */
     public function __construct(array $attributes = [])
     {
@@ -23,7 +18,7 @@ class Fluent extends \Illuminate\Support\Fluent
     }
 
     /**
-     * @param array $attributes
+     * @param array<int|string, mixed> $attributes
      *
      * @return static
      */
@@ -50,7 +45,7 @@ class Fluent extends \Illuminate\Support\Fluent
 
     /**
      * @param string $method
-     * @param array $parameters
+     * @param array<mixed> $parameters
      *
      * @return mixed
      */
@@ -76,11 +71,17 @@ class Fluent extends \Illuminate\Support\Fluent
     }
 
     /**
+     * @param array<string> $ignoredMethods
+     *
      * @return static
      */
-    public function applyTo(object $instance)
+    public function applyTo(object $instance, array $ignoredMethods = [])
     {
         foreach ($this->attributes as $method => $arguments) {
+            if (in_array($method, $ignoredMethods)) {
+                continue;
+            }
+
             if ($arguments === null) {
                 $instance->$method();
 
@@ -110,7 +111,7 @@ class Fluent extends \Illuminate\Support\Fluent
     }
 
     /**
-     * @param int|string|object $offset
+     * @param int|string|object $key
      * @param mixed $value
      *
      * @return static
@@ -145,6 +146,9 @@ class Fluent extends \Illuminate\Support\Fluent
         if (is_int($offset)) {
             $offset = $value;
             $value = null;
+        } elseif (is_object($offset)) {
+            $value = $offset;
+            $offset = get_class($offset);
         }
 
         if (is_string($offset)) {
@@ -180,12 +184,18 @@ class Fluent extends \Illuminate\Support\Fluent
      */
     public function remove($key)
     {
+        if (is_object($key)) {
+            $key = get_class($key);
+        }
+
         unset($this->attributes[$key]);
 
         return $this;
     }
 
     /**
+     * @param array<int|string, mixed> $attributes
+     *
      * @return static
      */
     public function clear(array $attributes = [])

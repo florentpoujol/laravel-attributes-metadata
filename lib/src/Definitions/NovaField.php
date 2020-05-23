@@ -14,9 +14,6 @@ use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Fields\Textarea;
-use function array_merge;
-use function strpos;
-use function ucfirst;
 
 /**
  * @mixin \Laravel\Nova\Fields\Field
@@ -108,7 +105,9 @@ class NovaField extends Fluent
     }
 
     /**
-     * @return static&\Laravel\Nova\Fields\Boolean
+     * @param array<int|string, mixed> $attributes
+     *
+     * @return static|\Laravel\Nova\Fields\Boolean
      */
     public static function boolean(array $attributes = [])
     {
@@ -118,7 +117,9 @@ class NovaField extends Fluent
     }
 
     /**
-     * @return static&\Laravel\Nova\Fields\Date
+     * @param array<int|string, mixed> $attributes
+     *
+     * @return static|\Laravel\Nova\Fields\Date
      */
     public static function date(array $attributes = [])
     {
@@ -129,7 +130,9 @@ class NovaField extends Fluent
     }
 
     /**
-     * @return static&\Laravel\Nova\Fields\DateTime
+     * @param array<int|string, mixed> $attributes
+     *
+     * @return static|\Laravel\Nova\Fields\DateTime
      */
     public static function datetime(array $attributes = [])
     {
@@ -140,7 +143,9 @@ class NovaField extends Fluent
     }
 
     /**
-     * @return static&\Laravel\Nova\Fields\Code
+     * @param array<int|string, mixed> $attributes
+     *
+     * @return static|\Laravel\Nova\Fields\Code
      */
     public static function json(array $attributes = [])
     {
@@ -151,7 +156,9 @@ class NovaField extends Fluent
     }
 
     /**
-     * @return static&\Laravel\Nova\Fields\Number
+     * @param array<int|string, mixed> $attributes
+     *
+     * @return static|\Laravel\Nova\Fields\Number
      */
     public static function number(array $attributes = [])
     {
@@ -162,7 +169,9 @@ class NovaField extends Fluent
     }
 
     /**
-     * @return static&\Laravel\Nova\Fields\Select
+     * @param array<int|string, mixed> $attributes
+     *
+     * @return static|\Laravel\Nova\Fields\Select
      */
     public static function select(array $attributes = [])
     {
@@ -172,7 +181,9 @@ class NovaField extends Fluent
     }
 
     /**
-     * @return static&\Laravel\Nova\Fields\Text
+     * @param array<int|string, mixed> $attributes
+     *
+     * @return static|\Laravel\Nova\Fields\Text
      */
     public static function text(array $attributes = [])
     {
@@ -183,7 +194,9 @@ class NovaField extends Fluent
     }
 
     /**
-     * @return static&\Laravel\Nova\Fields\Textarea
+     * @param array<int|string, mixed> $attributes
+     *
+     * @return static|\Laravel\Nova\Fields\Textarea
      */
     public static function textarea(array $attributes = [])
     {

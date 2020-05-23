@@ -6,7 +6,6 @@ namespace FlorentPoujol\LaravelAttributePresets\Definitions;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder;
-use function method_exists;
 
 /**
  * The type of the DB column can be set either via the `type()` method
@@ -36,6 +35,10 @@ class DbColumn extends Fluent
 {
     use BlueprintFieldTypePHPDocs;
 
+    /**
+     * @param string $method
+     * @param array<mixed> $parameters
+     */
     public function __call($method, $parameters = [])
     {
         if (method_exists(Blueprint::class, $method)) {

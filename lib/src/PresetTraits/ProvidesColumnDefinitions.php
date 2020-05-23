@@ -17,8 +17,13 @@ trait ProvidesColumnDefinitions
     public function addToTable(Blueprint $table)
     {
         if ($this->columnDefinitions !== null) {
+            $name = $this->getName();
+            if ($name === null) {
+                throw new \Exception("Attribute name not set. It is required for column definitions.");
+            }
+
             $this->columnDefinitions
-                ->name($this->getName())
+                ->name($name)
                 ->addToTable($table);
         }
 
@@ -64,7 +69,7 @@ trait ProvidesColumnDefinitions
     /**
      * Catch the call for the 'dbColumn' key when the base preset itself is filled
      *
-     * @param array|callable $attributesOrCallback Will fill or tap into the underlying definition instance
+     * @param array<int|string, mixed>|callable $attributesOrCallback Will fill or tap into the underlying definition instance
      *
      * @return static
      */

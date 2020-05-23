@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class FluentTest extends TestCase
 {
-    public function test_fluent_arguments()
+    public function test_fluent_arguments(): void
     {
         $fluent = new Fluent();
         $this->assertEmpty($fluent->toArray());
@@ -119,10 +119,8 @@ class FluentTest extends TestCase
         $this->assertSame(['key1' => null], $fluent->toArray());
     }
 
-    public function tapCallable($fluent2)
+    public function tapCallable(Fluent $fluent2): void
     {
-        $this->assertInstanceOf(Fluent::class, $fluent2);
-
         $fluent2->fill(['key1']);
     }
 
@@ -153,6 +151,7 @@ class FluentTest extends TestCase
 
         $fluent->add('key1');
         $fluent->add('key2:value1');
+        // @phpstan-ignore-next-line
         $fluent->add('key3', ['subkey1', 'subkey2' => 2]); // argument 2 ignored
 
         $expected = [
