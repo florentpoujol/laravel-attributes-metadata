@@ -173,9 +173,11 @@ return [
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
-        App\Providers\NovaServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
+        // only load the nova service provider if Nova is actually installed
+        class_exists('\Laravel\Nova\Nova') ?
+            App\Providers\NovaServiceProvider::class : null,
     ],
 
     /*
