@@ -22,7 +22,7 @@ namespace FlorentPoujol\LaravelAttributePresets\PresetTraits;
  * @method bool isDate()
  *
  * @method $this default(mixed $value)
- * @method $this getDefaultValue(mixed $value)
+ * @method null|mixed getDefaultValue(mixed $value)
  * @method $this hasDefaultValue(mixed $value)
  */
 trait ProvidesModelMetadata

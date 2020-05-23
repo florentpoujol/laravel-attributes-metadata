@@ -153,7 +153,7 @@ class FluentTest extends TestCase
 
         $fluent->add('key1');
         $fluent->add('key2:value1');
-        $fluent->add('key3', ['subkey1', 'subkey2' => 2]); // 2 argument ignored
+        $fluent->add('key3', ['subkey1', 'subkey2' => 2]); // argument 2 ignored
 
         $expected = [
             'key1' => null,

@@ -16,16 +16,21 @@
     "laravel/framework": "^6.0|^7.0"
   },
   "require-dev": {
+    "phpstan/phpstan": "^0.12.25",
     "phpunit/phpunit": "^9.1",
     "squizlabs/php_codesniffer": "^3.5"
   },
   "autoload": {
     "psr-4": {
       "FlorentPoujol\\LaravelAttributePresets\\": "src/",
+      "Laravel\\Nova\\": "vendor/laravel/nova/src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
       "FlorentPoujol\\LaravelAttributePresetsTests\\": "tests/"
     }
   },
-  "autoload-dev": {},
   "extra": {},
   "config": {
     "sort-packages": true
@@ -33,6 +38,7 @@
   "scripts": {
     "tests": "./vendor/bin/phpunit tests",
     "cs": "./vendor/bin/phpcs",
-    "cf": "./vendor/bin/phpcbf"
+    "cf": "./vendor/bin/phpcbf",
+    "phpstan": "./vendor/bin/phpstan analyse --autoload-file vendor/autoload.php --level 0 src"
   }
 }

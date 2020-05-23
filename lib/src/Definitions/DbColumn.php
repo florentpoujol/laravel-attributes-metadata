@@ -6,7 +6,6 @@ namespace FlorentPoujol\LaravelAttributePresets\Definitions;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder;
-use function array_unshift;
 use function method_exists;
 
 /**
@@ -55,7 +54,7 @@ class DbColumn extends Fluent
             // now use reflection on that method to get the name of the parameters
             $reflMethod = new \ReflectionMethod(Blueprint::class, $method);
             $reflParams = $reflMethod->getParameters();
-            array_unshift($reflParams); // the $column param is always the first one
+            array_shift($reflParams); // the $column param is always the first one
 
             foreach ($reflParams as $i => $reflParam) {
                 $name = $reflParam->getName();

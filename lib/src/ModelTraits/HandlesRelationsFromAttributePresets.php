@@ -52,4 +52,3 @@ trait HandlesRelationsFromAttributePresets
         return parent::__call($method, $arguments);
     }
 }
-

@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\Relations\Relation as BaseLaravelRelation;
 /**
  * @method $this relation(string $method, ...$params)
  * @method bool isRelation()
- *
- * @method $this related(string $modelFqcn)
  */
 trait ProvidesRelations
 {
