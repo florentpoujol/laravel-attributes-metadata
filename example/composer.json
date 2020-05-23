@@ -10,6 +10,7 @@
     "require": {
         "php": "^7.2.5",
         "fideloper/proxy": "^4.2",
+        "florentpoujol/laravel-attribute-presets": "dev-presets",
         "fruitcake/laravel-cors": "^1.0",
         "guzzlehttp/guzzle": "^6.3",
         "laravel/framework": "^7.0",
@@ -27,6 +28,10 @@
         {
             "type": "path",
             "url": "./nova"
+        },
+        {
+            "type": "path",
+            "url": "../lib"
         }
     ],
     "config": {
