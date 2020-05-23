@@ -221,4 +221,3 @@ trait SetupModelFromAttributePresets
         static::$staticKeyName = $primaryKeyAttr->getName() ?: $model->primaryKey;
     }
 }
-

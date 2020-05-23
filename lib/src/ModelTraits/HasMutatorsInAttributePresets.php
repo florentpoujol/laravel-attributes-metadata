@@ -54,4 +54,3 @@ trait HasMutatorsInAttributePresets
         return $preset->set($value);
     }
 }
-

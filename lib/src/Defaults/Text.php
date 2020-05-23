@@ -26,22 +26,22 @@ class Text extends BasePreset
             case 'tiny':
             case 'tinytext':
                 $type = 'tinyText';
-                $max = 2**8;
+                $max = 2 ** 8;
                 break;
             case 'text':
             default:
                 $type = 'text';
-                $max = 2**16;
+                $max = 2 ** 16;
                 break;
             case 'medium':
             case 'mediumtext':
                 $type = 'mediumText';
-                $max = 2**24;
+                $max = 2 ** 24;
                 break;
             case 'long':
             case 'longtext':
                 $type = 'longText';
-                $max = 2**32;
+                $max = 2 ** 32;
                 break;
         }
 

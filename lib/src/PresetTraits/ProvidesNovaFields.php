@@ -88,6 +88,4 @@ trait ProvidesNovaFields
 
         return $this;
     }
-
-
 }

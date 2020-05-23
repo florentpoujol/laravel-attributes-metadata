@@ -19,12 +19,10 @@ trait ProvidesRelations
 
     public function relationName(string $modelFqcn)
     {
-
     }
 
     public function related(string $modelFqcn)
     {
-
     }
 
 
