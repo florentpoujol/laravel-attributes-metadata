@@ -24,6 +24,7 @@ class FluentTest extends TestCase
             'oneArrayArg2' => [['value1', 2]],
         ]);
 
+        /** @noinspection PhpUndefinedMethodInspection */
         $fluent2 = (new Fluent())
             ->noArg()
             ->oneArg('value1')

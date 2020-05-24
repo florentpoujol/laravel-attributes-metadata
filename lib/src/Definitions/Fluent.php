@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\Definitions;
 
+use Illuminate\Support\Str;
+
 class Fluent extends \Illuminate\Support\Fluent
 {
     /**
@@ -26,6 +28,21 @@ class Fluent extends \Illuminate\Support\Fluent
     {
         foreach ($attributes as $key => $value) {
             if (is_int($key)) {
+                if (is_object($value)) {
+                    $this->offsetSet($value);
+
+                    continue;
+                }
+
+                if (is_string($value) && Str::contains($value, ':')) {
+                    // we know that the method can not exists
+                    [$key, $value] = explode(':', $value, 2);
+
+                    $this->$key($value);
+
+                    continue;
+                }
+
                 $this->$value();
 
                 continue;
@@ -147,8 +164,9 @@ class Fluent extends \Illuminate\Support\Fluent
             $offset = $value;
             $value = null;
         } elseif (is_object($offset)) {
-            $value = $offset;
-            $offset = get_class($offset);
+            $this->attributes[get_class($offset)] = $offset;
+
+            return $this;
         }
 
         if (is_string($offset)) {
@@ -174,8 +192,6 @@ class Fluent extends \Illuminate\Support\Fluent
 
         return $this;
     }
-
-
 
     /**
      * @param string|object $key
@@ -212,20 +228,28 @@ class Fluent extends \Illuminate\Support\Fluent
     }
 
     /**
-     * @param string $key
+     * @param string|object $key
      */
     public function has($key): bool
     {
+        if (is_object($key)) {
+            $key = get_class($key);
+        }
+
         return array_key_exists($key, $this->attributes);
     }
 
     /**
-     * @param string $key
+     * @param string|object $key
      *
      * @return bool Returns `true` if the key exists and isn't false
      */
     public function is($key): bool
     {
+        if (is_object($key)) {
+            $key = get_class($key);
+        }
+
         return $this->get($key, false) !== false;
     }
 }

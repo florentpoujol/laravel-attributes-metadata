@@ -4,8 +4,41 @@ declare(strict_types=1);
 
 namespace FlorentPoujol\LaravelAttributePresets\Definitions;
 
+use Illuminate\Support\Str;
+
 class Validation extends Fluent
 {
+    /**
+     * @param string $method
+     * @param array<mixed> $parameters
+     *
+     * @return mixed
+     */
+    public function __call($method, $parameters = [])
+    {
+        if (strpos($method, 'get') === 0) {
+            return $this->get(lcfirst(substr($method, 3)));
+        }
+
+        if (strpos($method, 'has') === 0) {
+            return $this->has(lcfirst(substr($method, 3)));
+        }
+
+        if (strpos($method, 'is') === 0) {
+            return $this->is(lcfirst(substr($method, 2)));
+        }
+
+        // for validation rules, the supported arguments are either
+        // one argument, which can be an array
+        // or a variable number of arguments
+        // There is never a case where there is several argument and the first one is an array
+        if (count($parameters) === 1) {
+            $parameters = $parameters[0];
+        }
+
+        return $this->offsetSet($method, $parameters);
+    }
+
     /**
      * @return array<string|\Illuminate\Validation\Rule>
      */
@@ -33,38 +66,41 @@ class Validation extends Fluent
     }
 
     /**
-     * @param int|string|\Illuminate\Validation\Rule $offset
+     * @param int|string|\Illuminate\Validation\Rule $ruleName
      * @param mixed $value
      */
-    public function offsetSet($offset, $value = null)
+    public function offsetSet($ruleName, $value = null)
     {
-        if (is_int($offset)) {
-            $offset = $value;
-            $value = null;
-        }
-
-        if (is_object($offset)) {
-            $this->attributes[get_class($offset)] = $offset;
+        if (is_int($ruleName)) {
+            $ruleName = $value;
+        } elseif (is_object($ruleName)) {
+            $this->attributes[get_class($ruleName)] = $ruleName;
 
             return $this;
         }
 
-        if (is_string($offset) && strpos(':', $offset) !== false) {
+        if ($value === null || (is_array($value) && empty($value))) {
+            // $ruleName is like 'required' (or 'min:5' when filled from array)
+            $value = $ruleName;
+        }
+
+        if (is_string($ruleName) && Str::contains($ruleName, ':')) {
             // eg: "min:5"
-            $offset = strtok($offset, ':');
+            $ruleName = strtok($ruleName, ':');
             // the value is still the full rule, with values
-            // the keys is the rule name
+            // the key is the rule name
         }
 
         if (is_array($value)) {
             $value = implode(',', $value);
         }
 
-        if (is_string($value) && strpos($value, $offset) !== 0) {
-            $value = "$offset:$value";
+        if (! is_object($value) && ! Str::contains($value, $ruleName)) {
+            // if the rule value does not contain the rule name, add it
+            $value = "$ruleName:$value";
         }
 
-        return parent::offsetSet($offset, $value);
+        return parent::offsetSet($ruleName, $value);
     }
 
     /**
@@ -74,13 +110,7 @@ class Validation extends Fluent
      */
     public function remove($key)
     {
-        if (is_object($key)) {
-            $key = get_class($key);
-        }
-
-        parent::remove($key);
-
-        return $this;
+        return parent::remove($key);
     }
 
     /**
@@ -88,10 +118,6 @@ class Validation extends Fluent
      */
     public function has($key): bool
     {
-        if (is_object($key)) {
-            $key = get_class($key);
-        }
-
         return parent::has($key);
     }
 }
